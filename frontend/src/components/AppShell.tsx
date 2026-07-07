@@ -1,9 +1,11 @@
 'use client';
 
 /**
- * S2 shell: top bar + nav rail (desktop ≥1240) / bottom bar (mobile) per docs/09 §4.
- * Nav targets map to the screen inventory (docs/08 §2); only S2 is live pre-Sprint 7.
+ * App shell: top bar + nav rail (desktop ≥ lg) / bottom bar (below lg) per docs/09 §4.
+ * Nav items come from src/lib/nav.ts (single source); active state from the pathname.
  */
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,7 +14,6 @@ import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
@@ -21,69 +22,96 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import LocalHospitalOutlinedIcon from '@mui/icons-material/LocalHospitalOutlined';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { NAV_ITEMS, type NavItem } from '@/lib/nav';
 import { district } from '@/lib/demo-data';
 
-const nav = [
-  { label: 'Command Center', Icon: SpaceDashboardOutlinedIcon, active: true },
-  { label: 'Alerts', Icon: NotificationsNoneIcon, active: false },
-  { label: 'Approvals', Icon: FactCheckOutlinedIcon, active: false },
-  { label: 'Facilities', Icon: LocalHospitalOutlinedIcon, active: false },
-  { label: 'Briefings', Icon: GraphicEqIcon, active: false },
-  { label: 'Reports', Icon: DescriptionOutlinedIcon, active: false },
-];
+const ICONS: Record<NavItem['icon'], typeof SpaceDashboardOutlinedIcon> = {
+  dashboard: SpaceDashboardOutlinedIcon,
+  alerts: NotificationsNoneIcon,
+  approvals: FactCheckOutlinedIcon,
+  facilities: LocalHospitalOutlinedIcon,
+  briefings: GraphicEqIcon,
+  reports: DescriptionOutlinedIcon,
+};
+
+function NavLink({ item, active, layout }: { item: NavItem; active: boolean; layout: 'rail' | 'bar' }) {
+  const Icon = ICONS[item.icon];
+  return (
+    <Stack
+      component={Link}
+      href={item.href}
+      aria-current={active ? 'page' : undefined}
+      alignItems="center"
+      spacing={0.25}
+      sx={{
+        textDecoration: 'none',
+        py: layout === 'rail' ? 0.75 : 0.5,
+        px: 0.5,
+        flex: layout === 'bar' ? 1 : undefined,
+        width: layout === 'rail' ? '100%' : undefined,
+        borderRadius: 2,
+        '&:hover .nav-pill': { bgcolor: active ? 'primary.main' : 'action.hover' },
+      }}
+    >
+      <Box
+        className="nav-pill"
+        sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 44, height: 30, borderRadius: 4,
+          bgcolor: active ? 'primary.main' : 'transparent',
+          color: active ? 'primary.contrastText' : 'text.secondary',
+          transition: 'background-color 120ms',
+        }}
+      >
+        <Icon sx={{ fontSize: 20 }} />
+      </Box>
+      <Typography variant="caption"
+        color={active ? 'text.primary' : 'text.secondary'}
+        sx={{ fontSize: 10, fontWeight: active ? 700 : 500 }}>
+        {item.short}
+      </Typography>
+    </Stack>
+  );
+}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('lg'));
-
-  const rail = (
-    <Stack
-      component="nav"
-      aria-label="Primary"
-      spacing={0.5}
-      sx={{
-        width: 84, py: 2, px: 1, alignItems: 'center', flexShrink: 0,
-        borderRight: 1, borderColor: 'divider', bgcolor: 'background.paper',
-        position: 'sticky', top: 0, height: '100vh',
-      }}
-    >
-      {nav.map(({ label, Icon, active }) => (
-        <Tooltip key={label} title={label} placement="right">
-          <Stack alignItems="center" spacing={0.25} sx={{ width: '100%', py: 0.75 }}>
-            <IconButton
-              aria-label={label}
-              aria-current={active ? 'page' : undefined}
-              sx={{
-                bgcolor: active ? 'primary.main' : 'transparent',
-                color: active ? 'primary.contrastText' : 'text.secondary',
-                '&:hover': { bgcolor: active ? 'primary.main' : 'action.hover' },
-              }}
-            >
-              <Icon fontSize="small" />
-            </IconButton>
-            <Typography variant="caption" color={active ? 'text.primary' : 'text.secondary'}
-              sx={{ fontSize: 10, fontWeight: active ? 700 : 500 }}>
-              {label.split(' ')[0]}
-            </Typography>
-          </Stack>
-        </Tooltip>
-      ))}
-    </Stack>
-  );
+  const pathname = usePathname();
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      {desktop && rail}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      {desktop && (
+        <Stack
+          component="nav"
+          aria-label="Primary"
+          spacing={0.5}
+          sx={{
+            width: 84, py: 2, px: 1, alignItems: 'center', flexShrink: 0,
+            borderRight: 1, borderColor: 'divider', bgcolor: 'background.paper',
+            position: 'sticky', top: 0, height: '100vh',
+          }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <Tooltip key={item.href} title={item.label} placement="right">
+              <Box sx={{ width: '100%' }}>
+                <NavLink item={item} active={isActive(item.href)} layout="rail" />
+              </Box>
+            </Tooltip>
+          ))}
+        </Stack>
+      )}
+
+      <Box sx={{ flex: 1, minWidth: 0, pb: desktop ? 0 : 9 /* clear the bottom bar */ }}>
         <AppBar position="sticky" color="transparent" elevation={0}
           sx={{ bgcolor: 'background.default', borderBottom: 1, borderColor: 'divider', backdropFilter: 'blur(8px)' }}>
-          <Toolbar sx={{ gap: 1.5 }}>
+          <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap' }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               SwasthyaOps AI
             </Typography>
-            <Chip size="small" variant="outlined"
-              label={`District ${district.name}, ${district.state}`} />
-            <Chip size="small" color="secondary" variant="outlined" label="Briefing · 07:00 ✓" />
+            <Chip size="small" variant="outlined" label={`District ${district.name}, ${district.state}`} />
+            {desktop && <Chip size="small" color="secondary" variant="outlined" label="Briefing · 07:00 ✓" />}
             <Box sx={{ flex: 1 }} />
             <Chip size="small" label="Demo data — Monsoon Week" color="warning" variant="outlined" />
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13 }}>MS</Avatar>
@@ -91,6 +119,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </AppBar>
         {children}
       </Box>
+
+      {!desktop && (
+        <Stack
+          component="nav"
+          aria-label="Primary"
+          direction="row"
+          sx={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: (t) => t.zIndex.appBar,
+            borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper',
+            px: 0.5, pt: 0.5, pb: 'max(4px, env(safe-area-inset-bottom))',
+          }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.href} item={item} active={isActive(item.href)} layout="bar" />
+          ))}
+        </Stack>
+      )}
     </Box>
   );
 }

@@ -5,6 +5,7 @@
  * is configured (S2; map lands per docs/11 Sprint 7). Score bar is a single-hue
  * magnitude encoding; the issue text carries the identity, not the color.
  */
+import Link from 'next/link';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Box from '@mui/material/Box';
@@ -24,6 +25,7 @@ export default function FacilityRiskList() {
       <CardHeader
         title={<Typography variant="subtitle1">Facilities — worst first</Typography>}
         subheader={`${district.reporting} of ${district.facilities} reporting today · district map lands with the Maps key`}
+        action={<Chip component={Link} href="/facilities" clickable size="small" label="Directory" variant="outlined" />}
         sx={{ pb: 0 }}
       />
       <Stack spacing={1.25} sx={{ p: 2 }}>

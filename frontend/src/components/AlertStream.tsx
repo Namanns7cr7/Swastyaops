@@ -5,6 +5,7 @@
  * alerts (district-scoped, newest first) in Sprint 7. New items must never reflow
  * under the cursor — a "N new" pill handles inserts when scrolled (docs/09 §5).
  */
+import Link from 'next/link';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import List from '@mui/material/List';
@@ -26,12 +27,12 @@ export default function AlertStream() {
     <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <CardHeader
         title={<Typography variant="subtitle1">Alert stream</Typography>}
-        subheader={`${alerts.length} open · live`}
-        action={<Chip size="small" label="✦ AI-triaged" variant="outlined" />}
+        subheader={`${alerts.filter((a) => a.status !== 'resolved').length} open · live`}
+        action={<Chip component={Link} href="/alerts" clickable size="small" label="View inbox" variant="outlined" />}
         sx={{ pb: 0 }}
       />
       <List sx={{ overflowY: 'auto', px: 1 }} aria-label="Open alerts, newest first">
-        {alerts.map((alert) => (
+        {alerts.filter((a) => a.status !== 'resolved').map((alert) => (
           <ListItemButton key={alert.id} sx={{ borderRadius: 2, alignItems: 'flex-start', gap: 1.5, py: 1.25 }}>
             <SeverityChip severity={alert.severity} />
             <Stack sx={{ minWidth: 0 }}>
