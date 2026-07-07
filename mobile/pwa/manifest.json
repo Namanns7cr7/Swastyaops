@@ -1,0 +1,23 @@
+{
+  "name": "SwasthyaOps AI",
+  "short_name": "SwasthyaOps",
+  "description": "AI Command Center for District Healthcare — facility operations, offline-first",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "hi",
+  "dir": "ltr",
+  "background_color": "#f7fafd",
+  "theme_color": "#005bbf",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "स्टॉक एंट्री", "short_name": "Stock", "url": "/facility/stock?source=shortcut", "icons": [{ "src": "/icons/shortcut-stock.png", "sizes": "96x96" }] },
+    { "name": "ओपीडी एंट्री", "short_name": "OPD", "url": "/facility/footfall?source=shortcut", "icons": [{ "src": "/icons/shortcut-opd.png", "sizes": "96x96" }] }
+  ],
+  "categories": ["health", "government", "productivity"]
+}

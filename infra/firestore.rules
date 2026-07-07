@@ -1,0 +1,78 @@
+rules_version = '2';
+
+// SwasthyaOps AI — Firestore security rules.
+// Contract: docs/04_Database_Schema.md §1.8. Clients READ their scoped data (incl.
+// offline mirror + realtime listeners); ALL writes go through svc-api (outbox model,
+// ADR-0002) — hence `allow write: if false` everywhere.
+// Tested by the role×collection×op matrix: backend/tests/rules (docs/12 §1).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function claims() { return request.auth.token; }
+    function role() { return claims().role; }
+    function inDistrict(d) { return signedIn() && (role() == 'state_admin' || d in claims().district_ids); }
+    function adminRole() { return role() in ['state_admin', 'district_admin', 'dm', 'viewer']; }
+
+    match /districts/{d} {
+      allow read: if inDistrict(d);
+      allow write: if false;
+    }
+
+    match /facilities/{f} {
+      allow read: if inDistrict(resource.data.district_id);
+      allow write: if false;
+
+      match /{sub=**} {
+        allow read: if inDistrict(get(/databases/$(database)/documents/facilities/$(f)).data.district_id);
+        allow write: if false;
+      }
+    }
+
+    match /alerts/{a} {
+      allow read: if inDistrict(resource.data.district_id);
+      allow write: if false;
+    }
+
+    match /recommendations/{r} {
+      allow read: if inDistrict(resource.data.district_id) && adminRole();
+      allow write: if false;
+    }
+
+    match /briefings/{b} {
+      allow read: if inDistrict(resource.data.district_id) && adminRole();
+      allow write: if false;
+    }
+
+    match /reports/{r} {
+      allow read: if inDistrict(resource.data.district_id) && adminRole();
+      allow write: if false;
+    }
+
+    match /forecasts/{f} {
+      allow read: if inDistrict(resource.data.district_id);
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;   // preferences via PATCH /v1/me/preferences
+    }
+
+    match /notifications/{n} {
+      allow read: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /config/{doc} {
+      allow read: if signedIn();  // catalog + thresholds are non-sensitive reference data
+      allow write: if false;
+    }
+
+    // agent_runs, audit_logs, idempotency_keys, processed_events: service-only.
+    match /{other=**} {
+      allow read, write: if false;
+    }
+  }
+}

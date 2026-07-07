@@ -1,0 +1,35 @@
+code,name,unit,category,essential
+EDL-ORS-200,ORS Sachet 20.5g,sachet,gastro,1
+EDL-ZNC-020,Zinc Sulphate 20mg Tab,tablet,gastro,1
+EDL-PCM-500,Paracetamol 500mg Tab,tablet,analgesic,1
+EDL-PCM-650,Paracetamol 650mg Tab,tablet,analgesic,1
+EDL-PCM-SYR,Paracetamol 125mg/5ml Syrup,bottle,analgesic,1
+EDL-AMX-500,Amoxicillin 500mg Cap,capsule,antibiotic,1
+EDL-AZM-500,Azithromycin 500mg Tab,tablet,antibiotic,1
+EDL-CIP-500,Ciprofloxacin 500mg Tab,tablet,antibiotic,1
+EDL-MET-500,Metformin 500mg Tab,tablet,diabetes,1
+EDL-AML-005,Amlodipine 5mg Tab,tablet,cardiovascular,1
+EDL-ATN-050,Atenolol 50mg Tab,tablet,cardiovascular,1
+EDL-IFA-100,Iron Folic Acid (Red) Tab,tablet,maternal,1
+EDL-IFA-SYR,IFA Syrup Paediatric,bottle,maternal,1
+EDL-OXY-010,Oxytocin 10IU Inj,ampoule,maternal,1
+EDL-MGS-050,Magnesium Sulphate 50% Inj,ampoule,maternal,1
+EDL-ACT-KIT,ACT Antimalarial Kit (Adult),kit,vector,1
+EDL-CHQ-250,Chloroquine 250mg Tab,tablet,vector,1
+EDL-OND-004,Ondansetron 4mg Tab,tablet,gastro,1
+EDL-SAL-INH,Salbutamol Inhaler 100mcg,inhaler,respiratory,1
+EDL-DEX-INJ,Dexamethasone 4mg/ml Inj,ampoule,emergency,1
+EDL-ADR-INJ,Adrenaline 1mg/ml Inj,ampoule,emergency,1
+EDL-TT-INJ,Tetanus Toxoid Inj,ampoule,immunization,1
+EDL-VITA-SOL,Vitamin A Solution 100000IU,bottle,child,1
+EDL-ALB-400,Albendazole 400mg Tab,tablet,child,1
+EDL-RL-500,Ringer Lactate 500ml IV,bottle,emergency,1
+EDL-NS-500,Normal Saline 500ml IV,bottle,emergency,1
+EDL-LGN-JEL,Lignocaine 2% Jelly,tube,procedural,1
+EDL-POV-SOL,Povidone Iodine 5% Solution,bottle,procedural,1
+EDL-RGT-DRB,Drabkin's Reagent (Hb),bottle,lab_reagent,1
+EDL-RGT-WID,Widal Test Kit,kit,lab_reagent,1
+EDL-RGT-NS1,Dengue NS1 Rapid Kit,kit,lab_reagent,1
+EDL-RGT-MAL,Malaria RDT Kit,kit,lab_reagent,1
+# --- extract: 32 of 381 items. Full Rajasthan EDL (version raj-edl-2025.2) loaded at
+# --- seeding; catalog is versioned in config/medicine_catalog (docs/14 §3, docs/04 §1.5).

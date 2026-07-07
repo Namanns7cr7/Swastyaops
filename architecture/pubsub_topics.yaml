@@ -1,0 +1,165 @@
+# SwasthyaOps AI — authoritative Pub/Sub topic registry
+# Consumed by: infra/terraform/pubsub.tf (topic/subscription provisioning),
+#              backend/app/core/pubsub.py (publish-side name constants + validation),
+#              docs/02_TRD.md §3, architecture/event_catalog.md (message contracts).
+# Conventions: {domain}.{entity}.{event}; every subscription gets {topic}.dlq after 5 attempts;
+#              ordering_key=facility_id on facility.* topics; all messages use the standard
+#              envelope (event_id, event_type, occurred_at, district_id, facility_id?, actor, trace_id, payload).
+# NOTE: subscription names are PROJECT-GLOBAL in Pub/Sub — every subscriber entry in this
+#       file must have a unique name, even when the same service consumes many topics.
+
+defaults:
+  message_retention: 604800s        # 7 days
+  dlq_retention: 1209600s           # 14 days
+  max_delivery_attempts: 5
+  push_auth: oidc                   # subscription SA must match receiving service audience
+
+topics:
+  # ── Facility operational facts (published by svc-api) ──────────────────────
+  - name: facility.inventory.updated
+    publisher: svc-api
+    ordering: facility_id
+    schema: schemas/facility_inventory_updated.proto
+    subscribers:
+      - { service: svc-agents,  subscription: inventory-agent-feed, filter: "" }
+      - { service: bigquery,    subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+  - name: facility.footfall.recorded
+    publisher: svc-api
+    ordering: facility_id
+    schema: schemas/facility_footfall_recorded.proto
+    subscribers:
+      - { service: svc-agents, subscription: footfall-agent-feed }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+  - name: facility.attendance.recorded
+    publisher: svc-api
+    ordering: facility_id
+    schema: schemas/facility_attendance_recorded.proto
+    subscribers:
+      - { service: svc-agents, subscription: doctor-agent-feed }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+  - name: facility.beds.updated
+    publisher: svc-api
+    ordering: facility_id
+    schema: schemas/facility_beds_updated.proto
+    subscribers:
+      - { service: svc-agents, subscription: bed-agent-feed }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+  - name: facility.labs.updated
+    publisher: svc-api
+    ordering: facility_id
+    schema: schemas/facility_labs_updated.proto
+    subscribers:
+      - { service: svc-agents, subscription: laboratory-agent-feed }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+
+  # ── Alerts (published by svc-forecast and svc-agents) ──────────────────────
+  - name: alerts.stockout.predicted
+    publisher: svc-forecast
+    schema: schemas/alert.proto
+    subscribers:
+      - { service: svc-agents, subscription: planner-stockout }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+  - name: alerts.footfall.spike
+    publisher: svc-forecast          # anomaly view refresh job
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: disease-intel-spikes }]
+  - name: alerts.outbreak.suspected
+    publisher: svc-agents            # Disease Intelligence Agent
+    schema: schemas/alert.proto
+    subscribers:
+      - { service: svc-agents, subscription: planner-outbreak }
+      - { service: svc-agents, subscription: notification-agent-outbreak }
+  - name: alerts.staffing.gap
+    publisher: svc-agents            # Doctor Agent
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-staffing }]
+  - name: alerts.bed.saturation
+    publisher: svc-agents            # Bed Agent
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-beds }]
+  - name: alerts.lab.downtime
+    publisher: svc-agents            # Laboratory Agent
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-labs }]
+  - name: alerts.stock.anomaly
+    publisher: svc-agents            # Inventory Agent (leakage/theft patterns)
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-stock-anomaly }]
+  - name: alerts.forecast.degraded
+    publisher: svc-agents            # Forecast Agent (series health)
+    schema: schemas/alert.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-forecast }]
+
+  # ── Agent orchestration ────────────────────────────────────────────────────
+  - name: agents.tasks.dispatch
+    publisher: [svc-agents, svc-api, cloud-scheduler]
+    schema: schemas/agent_task.proto
+    subscribers:
+      # one filtered push subscription per agent; filter on attribute agent=<name>
+      - { service: svc-agents, subscription: agent-planner,             filter: "attributes.agent=\"planner\"" }
+      - { service: svc-agents, subscription: agent-inventory,           filter: "attributes.agent=\"inventory\"" }
+      - { service: svc-agents, subscription: agent-forecast,            filter: "attributes.agent=\"forecast\"" }
+      - { service: svc-agents, subscription: agent-disease-intelligence, filter: "attributes.agent=\"disease_intelligence\"" }
+      - { service: svc-agents, subscription: agent-doctor,              filter: "attributes.agent=\"doctor\"" }
+      - { service: svc-agents, subscription: agent-bed,                 filter: "attributes.agent=\"bed\"" }
+      - { service: svc-agents, subscription: agent-laboratory,          filter: "attributes.agent=\"laboratory\"" }
+      - { service: svc-agents, subscription: agent-recommendation,      filter: "attributes.agent=\"recommendation\"" }
+      - { service: svc-agents, subscription: agent-report,              filter: "attributes.agent=\"report\"" }
+      - { service: svc-agents, subscription: agent-notification,        filter: "attributes.agent=\"notification\"" }
+      - { service: svc-agents, subscription: agent-executive-briefing,  filter: "attributes.agent=\"executive_briefing\"" }
+  - name: agents.runs.completed
+    publisher: svc-agents
+    schema: schemas/agent_run_result.proto
+    subscribers:
+      - { service: svc-agents, subscription: planner-results }
+      - { service: bigquery,   subscription: bq-events, type: bigquery, table: swasthyaops_raw.events }
+
+  # ── Recommendations / notifications / reports ─────────────────────────────
+  - name: recommendations.created
+    publisher: svc-agents            # Recommendation Agent only
+    schema: schemas/recommendation_event.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-recs }]
+  - name: recommendations.approved
+    publisher: svc-api
+    schema: schemas/recommendation_event.proto
+    subscribers:
+      - { service: svc-agents,  subscription: notification-agent-recs-approved }
+      - { service: svc-reports, subscription: order-pdf-render }
+  - name: notifications.outbound
+    publisher: svc-agents            # Notification Agent
+    schema: schemas/notification_outbound.proto
+    subscribers: [{ service: svc-notify, subscription: notify-transport }]
+  - name: reports.requested
+    publisher: svc-agents            # Report / Briefing Agents, svc-api (ad hoc)
+    schema: schemas/report_request.proto
+    subscribers: [{ service: svc-reports, subscription: report-render }]
+  - name: reports.generated
+    publisher: svc-reports
+    schema: schemas/report_generated.proto
+    subscribers: [{ service: svc-agents, subscription: report-agent-completions }]
+  - name: briefings.ready
+    publisher: svc-agents            # Executive Briefing Agent
+    schema: schemas/briefing_ready.proto
+    subscribers: [{ service: svc-agents, subscription: notification-agent-briefings }]
+  - name: forecasts.generated
+    publisher: svc-forecast
+    schema: schemas/forecast_batch.proto
+    subscribers: [{ service: svc-agents, subscription: forecast-agent-batches }]
+
+  # ── Ingestion completions (published by svc-ingestion) ────────────────────
+  - name: ingest.hmis.loaded
+    publisher: svc-ingestion
+    schema: schemas/ingest_loaded.proto
+    subscribers: [{ service: svc-agents, subscription: planner-ingest-hmis }]
+  - name: ingest.idsp.loaded
+    publisher: svc-ingestion
+    schema: schemas/ingest_loaded.proto
+    subscribers: [{ service: svc-agents, subscription: disease-intel-idsp }]
+  - name: ingest.weather.loaded
+    publisher: svc-ingestion
+    schema: schemas/ingest_loaded.proto
+    subscribers: [{ service: svc-agents, subscription: disease-intel-weather }]
+  - name: ingest.directory.loaded
+    publisher: svc-ingestion
+    schema: schemas/ingest_loaded.proto
+    subscribers: []                  # consumed on demand via BigQuery; event kept for freshness metrics

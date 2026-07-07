@@ -1,0 +1,70 @@
+# CD — merge to main → dev; tag v* → staging → prod canary (docs/10 §5, docs/02 §13).
+# GitHub → GCP via Workload Identity Federation; Cloud Build does the heavy lifting.
+name: deploy
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-dev:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: sa-deploy@swasthyaops-dev.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: |
+          gcloud builds submit --project swasthyaops-dev \
+            --config infra/cloudbuild.yaml \
+            --substitutions=_ENV=dev,SHORT_SHA=${GITHUB_SHA::7}
+      - name: Deploy hosting + rules
+        run: |
+          cd frontend && npm ci && npm run build
+          npx firebase-tools deploy --project swasthyaops-dev --only hosting,firestore:rules --non-interactive
+
+  deploy-staging:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: sa-deploy@swasthyaops-staging.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: |
+          gcloud builds submit --project swasthyaops-staging \
+            --config infra/cloudbuild.yaml \
+            --substitutions=_ENV=staging,SHORT_SHA=${GITHUB_SHA::7}
+      - name: Full E2E + load smoke (docs/12 §3, §6)
+        run: |
+          cd frontend && npm ci && npx playwright install --with-deps chromium
+          npx playwright test tests/e2e --project=staging
+
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: prod   # requires reviewer approval in GitHub environment settings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: sa-deploy@swasthyaops-prod.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: |
+          gcloud builds submit --project swasthyaops-prod \
+            --config infra/cloudbuild.yaml \
+            --substitutions=_ENV=prod,SHORT_SHA=${GITHUB_SHA::7}
+      - name: Canary 10% / 30 min soak, promote or rollback
+        run: bash scripts/canary_promote.sh --project swasthyaops-prod --soak-minutes 30

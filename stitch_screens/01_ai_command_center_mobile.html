@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Command Center - SwasthyaOps AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#d7dade",
+                      "on-secondary-container": "#007165",
+                      "surface-container-highest": "#e0e3e6",
+                      "outline-variant": "#c1c6d6",
+                      "on-background": "#181c1f",
+                      "on-primary-fixed": "#001a41",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-container": "#ffffff",
+                      "tertiary-fixed": "#e1e3e4",
+                      "surface-container-high": "#e5e8ec",
+                      "inverse-surface": "#2d3134",
+                      "on-tertiary-fixed-variant": "#454748",
+                      "inverse-primary": "#adc7ff",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#adc7ff",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#ebeef2",
+                      "secondary-fixed-dim": "#70d8c8",
+                      "on-primary": "#ffffff",
+                      "secondary": "#006b5f",
+                      "on-secondary-fixed-variant": "#005048",
+                      "primary": "#005bbf",
+                      "surface-variant": "#e0e3e6",
+                      "surface-tint": "#005bc0",
+                      "primary-fixed": "#d8e2ff",
+                      "on-primary-fixed-variant": "#004493",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#f7fafd",
+                      "surface-container-low": "#f1f4f7",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#414754",
+                      "inverse-on-surface": "#eef1f5",
+                      "tertiary-container": "#757778",
+                      "background": "#f7fafd",
+                      "on-tertiary-fixed": "#191c1d",
+                      "secondary-container": "#8df5e4",
+                      "on-surface": "#181c1f",
+                      "on-secondary-fixed": "#00201c",
+                      "secondary-fixed": "#8df5e4",
+                      "on-primary-container": "#ffffff",
+                      "primary-container": "#1a73e8",
+                      "tertiary": "#5c5e60",
+                      "outline": "#727785",
+                      "tertiary-fixed-dim": "#c5c7c8",
+                      "surface": "#f7fafd",
+                      "surface-container-lowest": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "sm": "8px",
+                      "margin-desktop": "32px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "margin-mobile": "16px",
+                      "base": "4px",
+                      "gutter": "24px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "title-md": ["Inter"],
+                      "label-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400"}],
+                      "display-lg": ["57px", {"lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "700"}],
+                      "title-lg": ["22px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400"}],
+                      "title-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0.15px", "fontWeight": "600"}],
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                      "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-lg text-body-lg flex h-screen overflow-hidden bg-background">
+<!-- NavigationDrawer (Sidebar - Desktop) -->
+<nav class="hidden md:flex flex-col bg-surface-container h-screen w-80 fixed left-0 top-0 z-40 border-r border-outline-variant shadow-md overflow-y-auto">
+<!-- Header Profile -->
+<div class="p-lg border-b border-outline-variant flex items-center gap-md">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high shrink-0">
+<img alt="District Health Officer" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkc2uZupWE5yMuhyTf-QZpwVhWRwi1Crjj2z_wsJX523s3Koo_R6NV_G6jUjyDx2UquRCcWq4bXuQf5XVG_OV341JXUSZX39hd6o0jjTboa-zR7iamUFYS7FlUtfcOApqujObs_b5GEzVHsoBMdOQf5aJbbqg9heX5kKbFCpx6dHepOuWLcOrFbSGHCpCU1n-BNfQve96t0zxwC48XB-qNaavAAUSrZpJrinvI6OO45cdB6843NuvGSA"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Dr. Rajesh Kumar</span>
+<span class="font-body-md text-body-md text-on-surface-variant">District Health Officer</span>
+<span class="font-label-md text-label-md text-tertiary">Admin Level 1</span>
+</div>
+</div>
+<!-- Navigation Items -->
+<div class="flex-1 py-md">
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-lg text-label-lg">Dashboard</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-full mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-transform duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-lg text-label-lg font-semibold">AI Command Center</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">inventory_2</span>
+<span class="font-label-lg text-label-lg">Medicine Inventory</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">local_hospital</span>
+<span class="font-label-lg text-label-lg">PHC Monitoring</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">groups</span>
+<span class="font-label-lg text-label-lg">Staff Directory</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">emergency</span>
+<span class="font-label-lg text-label-lg">Emergency Response</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+<span class="font-label-lg text-label-lg">Analytics</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-label-lg text-label-lg">Reports</span>
+</a>
+</div>
+<div class="mt-auto border-t border-outline-variant py-md">
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-lg text-label-lg">Settings</span>
+</a>
+<a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-full hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help</span>
+<span class="font-label-lg text-label-lg">Help</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-80 h-full w-full bg-surface-bright relative">
+<!-- TopAppBar -->
+<header class="bg-surface-bright w-full top-0 sticky border-b border-outline-variant shadow-sm flex justify-between items-center px-margin-desktop py-md z-30">
+<div class="flex items-center gap-sm">
+<!-- Mobile Menu Icon -->
+<button class="md:hidden text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors cursor-pointer active:scale-95 duration-150">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">SwasthyaOps AI</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors cursor-pointer active:scale-95 duration-150 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Chat / Canvas Area -->
+<div class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop flex flex-col gap-lg no-scrollbar pb-32 md:pb-32">
+<!-- Greeting / Welcome -->
+<div class="flex flex-col gap-sm text-center md:text-left mt-md">
+<h2 class="font-display-lg text-display-lg text-on-surface">Hello, Dr. Kumar.</h2>
+<p class="font-title-lg text-title-lg text-on-surface-variant font-light">How can I assist with district health operations today?</p>
+</div>
+<!-- AI Response Card (Bento style) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant p-lg max-w-4xl self-start flex flex-col gap-md">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[18px]">psychology</span>
+</div>
+<span class="font-title-md text-title-md text-primary">SwasthyaOps AI Analysis</span>
+<span class="ml-auto font-label-md text-label-md text-tertiary flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> 94% Confidence
+                    </span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+                    Based on recent predictive models, <span class="font-semibold text-error">PHC North</span> and <span class="font-semibold text-error">PHC East</span> are likely to face a critical shortage of <span class="font-semibold">Paracetamol</span> and <span class="font-semibold">ORS</span> within the next 48 hours due to a localized spike in fever cases reported over the last 3 days.
+                </p>
+<!-- Data Table Snippet -->
+<div class="border border-outline-variant rounded-lg overflow-hidden mt-sm">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low font-label-md text-label-md text-on-surface-variant uppercase">
+<tr>
+<th class="p-sm border-b border-outline-variant font-medium">Facility</th>
+<th class="p-sm border-b border-outline-variant font-medium">Item at Risk</th>
+<th class="p-sm border-b border-outline-variant font-medium">Est. Depletion</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-sm border-b border-outline-variant">PHC North</td>
+<td class="p-sm border-b border-outline-variant">Paracetamol</td>
+<td class="p-sm border-b border-outline-variant text-error font-medium">~18 Hours</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-sm border-b border-outline-variant">PHC East</td>
+<td class="p-sm border-b border-outline-variant">ORS Packets</td>
+<td class="p-sm border-b border-outline-variant text-error font-medium">~36 Hours</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-sm mt-sm flex-wrap">
+<button class="bg-primary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-on-primary-fixed-variant transition-colors shadow-sm active:scale-95 duration-150 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span> Suggest Redistribution
+                    </button>
+<button class="bg-transparent border border-outline text-on-surface font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">visibility</span> View Details
+                    </button>
+</div>
+</div>
+<!-- User Prompt Example -->
+<div class="bg-primary-container rounded-xl shadow-sm px-lg py-md max-w-2xl self-end">
+<p class="font-body-lg text-body-lg text-on-primary-container">
+                    What is the current operational status of the ambulance fleet across the district?
+                </p>
+</div>
+<!-- AI Response Card (Status) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant p-lg max-w-4xl self-start flex flex-col gap-md">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[18px]">psychology</span>
+</div>
+<span class="font-title-md text-title-md text-primary">Fleet Status Overview</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Stat Card -->
+<div class="bg-surface-container-low p-md rounded-lg border border-outline-variant flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Active Ambulances</span>
+<div class="flex items-end gap-2 mt-sm">
+<span class="font-headline-lg text-headline-lg text-on-surface">24</span>
+<span class="font-label-md text-label-md text-tertiary mb-1">/ 30</span>
+</div>
+<!-- Status Chip -->
+<div class="mt-sm self-start inline-flex items-center gap-1 bg-secondary/10 text-on-secondary-fixed-variant px-2 py-1 rounded-full font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Optimal
+                        </div>
+</div>
+<!-- Stat Card -->
+<div class="bg-surface-container-low p-md rounded-lg border border-outline-variant flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Maintenance</span>
+<div class="flex items-end gap-2 mt-sm">
+<span class="font-headline-lg text-headline-lg text-on-surface">4</span>
+</div>
+<div class="mt-sm self-start inline-flex items-center gap-1 bg-outline-variant/30 text-on-surface-variant px-2 py-1 rounded-full font-label-md text-label-md">
+                             Scheduled
+                        </div>
+</div>
+<!-- Stat Card -->
+<div class="bg-surface-container-low p-md rounded-lg border border-outline-variant flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">Critical/Off-Road</span>
+<div class="flex items-end gap-2 mt-sm">
+<span class="font-headline-lg text-headline-lg text-error">2</span>
+</div>
+<div class="mt-sm self-start inline-flex items-center gap-1 bg-error/10 text-error px-2 py-1 rounded-full font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Requires Attention
+                        </div>
+</div>
+</div>
+</div>
+</div> <!-- End Chat Canvas -->
+<!-- Input Area & Suggestion Chips (Fixed Bottom Desktop) -->
+<div class="absolute bottom-0 left-0 w-full bg-surface-bright border-t border-outline-variant p-md md:p-lg z-20 pb-24 md:pb-lg flex flex-col items-center">
+<!-- Prompt Suggestion Chips -->
+<div class="flex gap-sm overflow-x-auto w-full max-w-4xl no-scrollbar mb-md pb-xs">
+<button class="shrink-0 bg-surface-container border border-outline-variant text-on-surface-variant font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+                    Which PHCs need attention?
+                </button>
+<button class="shrink-0 bg-surface-container border border-outline-variant text-on-surface-variant font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+                    Predict inventory shortages
+                </button>
+<button class="shrink-0 bg-surface-container border border-outline-variant text-on-surface-variant font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+                    Analyze staff distribution
+                </button>
+<button class="shrink-0 bg-surface-container border border-outline-variant text-on-surface-variant font-label-lg text-label-lg px-4 py-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+                    Recent emergency trends
+                </button>
+</div>
+<!-- Input Box -->
+<div class="w-full max-w-4xl relative flex items-center">
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-lg text-body-lg rounded-full py-3 pl-6 pr-14 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-[0_4px_12px_rgba(0,0,0,0.05)]" placeholder="Ask SwasthyaOps AI..." type="text"/>
+<button class="absolute right-2 bg-primary text-on-primary p-2 rounded-full hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- Floating Voice Assistant Button -->
+<button class="fixed bottom-28 md:bottom-24 right-margin-mobile md:right-margin-desktop w-14 h-14 bg-secondary-container text-on-secondary-container rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex items-center justify-center hover:bg-secondary hover:text-on-secondary transition-all active:scale-95 duration-150 z-50 group">
+<span class="material-symbols-outlined text-[28px] group-hover:scale-110 transition-transform">mic</span>
+</button>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="sm:hidden flex justify-around items-center w-full px-2 py-3 bg-surface border-t border-outline-variant shadow-[0_-4px_12px_rgba(0,0,0,0.05)] fixed bottom-0 z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 active:bg-surface-container-high scale-active-90 transition-all duration-200 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-md-mobile text-label-md-mobile mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl px-4 py-1 active:bg-surface-container-high scale-active-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-label-md-mobile text-label-md-mobile mt-1 font-semibold">AI Command</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 active:bg-surface-container-high scale-active-90 transition-all duration-200 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">package_2</span>
+<span class="font-label-md-mobile text-label-md-mobile mt-1">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 active:bg-surface-container-high scale-active-90 transition-all duration-200 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications_active</span>
+<span class="font-label-md-mobile text-label-md-mobile mt-1">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 active:bg-surface-container-high scale-active-90 transition-all duration-200 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+<span class="font-label-md-mobile text-label-md-mobile mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
