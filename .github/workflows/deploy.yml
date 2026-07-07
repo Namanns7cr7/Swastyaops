@@ -10,9 +10,12 @@ permissions:
   id-token: write
   contents: read
 
+# Jobs are guarded on vars.WIF_PROVIDER: until the repo variable is set (value = the
+# `wif_provider` Terraform output; see docs/10 §5), deploys skip cleanly instead of
+# failing at the auth step.
 jobs:
   deploy-dev:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.WIF_PROVIDER != ''
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -32,7 +35,7 @@ jobs:
           npx firebase-tools deploy --project swasthyaops-dev --only hosting,firestore:rules --non-interactive
 
   deploy-staging:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && vars.WIF_PROVIDER != ''
     runs-on: ubuntu-latest
     environment: staging
     steps:

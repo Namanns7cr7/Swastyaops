@@ -49,8 +49,26 @@ resource "google_service_account" "deploy" {
 }
 
 resource "google_project_iam_member" "deploy_roles" {
-  for_each = toset(["roles/run.admin", "roles/artifactregistry.writer", "roles/iam.serviceAccountUser"])
+  for_each = toset([
+    "roles/run.admin",
+    "roles/artifactregistry.writer",
+    "roles/iam.serviceAccountUser",
+    "roles/cloudbuild.builds.editor",          # gcloud builds submit
+    "roles/storage.admin",                     # source upload to the _cloudbuild bucket
+    "roles/serviceusage.serviceUsageConsumer", # API calls under WIF identity
+    "roles/firebasehosting.admin",             # firebase deploy --only hosting
+    "roles/firebaserules.admin",               # firebase deploy --only firestore:rules
+  ])
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.deploy.email}"
+}
+
+# The pipeline's build steps run as the Cloud Build service agent, which deploys
+# Cloud Run revisions (infra/cloudbuild.yaml deploy step).
+resource "google_project_iam_member" "cloudbuild_agent_roles" {
+  for_each = toset(["roles/run.admin", "roles/iam.serviceAccountUser", "roles/artifactregistry.writer"])
   project  = var.project_id
   role     = each.key
-  member   = "serviceAccount:${google_service_account.deploy.email}"
+  member   = "serviceAccount:${data.google_project.current.number}@cloudbuild.gserviceaccount.com"
 }

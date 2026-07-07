@@ -48,8 +48,9 @@ jobs:
       - run: tflint --chdir=infra/terraform
 
   prompt-evals:
-    # Smoke subset on PR; full nightly + on prompt changes (docs/06 §8, docs/12 §7)
-    if: github.event.pull_request.draft == false
+    # Smoke subset on PR; full nightly + on prompt changes (docs/06 §8, docs/12 §7).
+    # Needs live Vertex AI via WIF — skips until the WIF_PROVIDER repo variable is set.
+    if: github.event.pull_request.draft == false && vars.WIF_PROVIDER != ''
     runs-on: ubuntu-latest
     permissions: { id-token: write, contents: read }
     steps:
