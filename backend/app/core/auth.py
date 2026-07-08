@@ -12,6 +12,7 @@ import firebase_admin
 from fastapi import Depends, Header
 from firebase_admin import auth as fb_auth
 
+from app.core.config import settings
 from app.core.errors import PermissionDenied, Unauthenticated
 
 if not firebase_admin._apps:  # noqa: SLF001 — documented singleton pattern
@@ -42,13 +43,11 @@ class Principal:
             raise PermissionDenied("Not authorized for this facility.", reason="TENANCY_VIOLATION")
 
 
-from app.core.config import settings
-
 async def current_principal(authorization: Annotated[str | None, Header()] = None) -> Principal:
     if not authorization or not authorization.startswith("Bearer "):
         raise Unauthenticated("Missing bearer token.")
     token = authorization.removeprefix("Bearer ")
-    if settings().env == "dev" and token == "mock-token":
+    if settings().env == "dev" and token == "mock-token":  # noqa: S105
         return Principal(
             uid="u1",
             role="district_admin",

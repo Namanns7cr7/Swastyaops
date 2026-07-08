@@ -54,14 +54,16 @@ async def record_footfall(
             new_total = current_data.get("total", 0) + body.delta
             
             current_symptoms = current_data.get("by_symptom", {})
+            symptoms = ["fever", "diarrheal", "respiratory", "injury", "anc", "other"]
             new_symptoms = {}
-            for sym in ["fever", "diarrheal", "respiratory", "injury", "anc", "other"]:
+            for sym in symptoms:
                 new_symptoms[sym] = current_symptoms.get(sym, 0) + body.by_symptom.get(sym, 0)
                 
             entries = current_data.get("entries", [])
         else:
             new_total = body.delta
-            new_symptoms = {sym: body.by_symptom.get(sym, 0) for sym in ["fever", "diarrheal", "respiratory", "injury", "anc", "other"]}
+            symptoms = ["fever", "diarrheal", "respiratory", "injury", "anc", "other"]
+            new_symptoms = {sym: body.by_symptom.get(sym, 0) for sym in symptoms}
             entries = []
 
         new_entry = {

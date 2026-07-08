@@ -12,6 +12,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+from google.cloud import firestore
 from pydantic import BaseModel, Field
 
 from app.core.context import active_district_id
@@ -100,9 +101,6 @@ def remember_fact(q: RememberFact) -> dict[str, Any]:
     return {"stored": True}
 
 
-
-from google.cloud import firestore
-
 class ListFacilitiesQuery(BaseModel):
     district_id: str
     type: str | None = None
@@ -119,10 +117,20 @@ def list_facilities(q: ListFacilitiesQuery) -> dict[str, Any]:
         coll = coll.where("block", "==", q.block)
     
     rows = [
-        {"facility_id": d.id, "name": d.get("name"), "type": d.get("type"), "block": d.get("block"), "health_score": d.get("health_score", 0)}
+        {
+            "facility_id": d.id,
+            "name": d.get("name"),
+            "type": d.get("type"),
+            "block": d.get("block"),
+            "health_score": d.get("health_score", 0),
+        }
         for d in coll.stream()
     ]
-    return {"rows": rows, "count": len(rows), "citation": {"kind": "metric", "ref": f"facilities?district={q.district_id}"}}
+    return {
+        "rows": rows,
+        "count": len(rows),
+        "citation": {"kind": "metric", "ref": f"facilities?district={q.district_id}"},
+    }
 
 
 class StockLedgerQuery(BaseModel):
@@ -144,11 +152,23 @@ def get_stock_ledger(q: StockLedgerQuery) -> dict[str, Any]:
             .collection("ledger").order_by("created_at", direction=firestore.Query.DESCENDING))
             
     rows = [
-        {"txn_id": d.id, "type": d.get("type"), "qty": d.get("qty"), "balance_after": d.get("balance_after"),
-         "source": d.get("source"), "recorded_at": str(d.get("recorded_at") or ""), "created_by": d.get("created_by")}
+        {
+            "txn_id": d.id,
+            "type": d.get("type"),
+            "qty": d.get("qty"),
+            "balance_after": d.get("balance_after"),
+            "source": d.get("source"),
+            "recorded_at": str(d.get("recorded_at") or ""),
+            "created_by": d.get("created_by"),
+        }
         for d in coll.limit(q.limit).stream()
     ]
-    return {"rows": rows, "count": len(rows), "citation": {"kind": "metric", "ref": f"facilities/{q.facility_id}/inventory/{q.item_code}/ledger"}}
+    ref = f"facilities/{q.facility_id}/inventory/{q.item_code}/ledger"
+    return {
+        "rows": rows,
+        "count": len(rows),
+        "citation": {"kind": "metric", "ref": ref},
+    }
 
 
 # ── Registered-but-sprint-scheduled tools (docs/11 sprint order). Each raises until

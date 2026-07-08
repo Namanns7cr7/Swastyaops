@@ -16,7 +16,7 @@ from app.core.config import settings
 from app.core.context import active_trace_id
 from app.core.errors import ApiError, api_error_handler
 from app.core.logging import configure_logging
-from app.routers import inventory, facilities, footfall, attendance
+from app.routers import attendance, facilities, footfall, inventory
 
 configure_logging()
 logger = logging.getLogger(__name__)
