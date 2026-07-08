@@ -17,8 +17,12 @@ from uuid_extensions import uuid7str
 from app.agents.registry import get_agent
 from app.core import pubsub
 from app.core.firestore import db
+from app.core.logging import configure_logging
+
+configure_logging()
 
 app = FastAPI(title="svc-agents", docs_url=None, openapi_url=None)
+
 
 
 @app.post("/internal/pubsub/tasks")
@@ -30,11 +34,16 @@ async def handle_task(request: Request) -> JSONResponse:
     event_id = task["event_id"]
 
     # Consumer idempotency (TRD §3): dedup on event_id.
+    from google.api_core.exceptions import AlreadyExists as GcpAlreadyExists
     dedup_ref = db().collection("processed_events").document(f"agents_{event_id}")
-    if dedup_ref.get().exists:
+    try:
+        dedup_ref.create({
+            "at": fs.SERVER_TIMESTAMP,
+            "expires_at": datetime.now(UTC) + timedelta(days=30),
+        })
+    except GcpAlreadyExists:
         return JSONResponse({"status": "duplicate_ignored"})
-    dedup_ref.set({"at": fs.SERVER_TIMESTAMP,
-                   "expires_at": datetime.now(UTC) + timedelta(days=30)})
+
 
     payload = task["payload"]
     agent_name = payload["agent"]
@@ -48,14 +57,21 @@ async def handle_task(request: Request) -> JSONResponse:
         "expires_at": datetime.now(UTC) + timedelta(days=30),
     })
 
+    from app.core.context import active_district_id
+
     agent = get_agent(agent_name)
+    token = active_district_id.set(task["district_id"])
     try:
-        result = await agent.run(task=payload, district_id=task["district_id"], run_ref=run_ref)
-        outcome = result.get("outcome", "ok")
-    except Exception as exc:  # noqa: BLE001 — outcome recorded; Pub/Sub retry via 500
-        run_ref.update({"status": "failed", "error": str(exc)[:2000]})
-        # 5xx → Pub/Sub redelivers (backoff per TRD §11); after 5 attempts → DLQ.
-        return JSONResponse({"status": "error"}, status_code=500)
+        try:
+            result = await agent.run(task=payload, district_id=task["district_id"], run_ref=run_ref)
+            outcome = result.get("outcome", "ok")
+        except Exception as exc:  # noqa: BLE001 — outcome recorded; Pub/Sub retry via 500
+            run_ref.update({"status": "failed", "error": str(exc)[:2000]})
+            # 5xx → Pub/Sub redelivers (backoff per TRD §11); after 5 attempts → DLQ.
+            return JSONResponse({"status": "error"}, status_code=500)
+    finally:
+        active_district_id.reset(token)
+
 
     run_ref.update({"status": "done", "outcome": outcome,
                     "prompt_version": agent.prompt_version, "model": agent.model,

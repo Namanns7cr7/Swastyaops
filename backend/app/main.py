@@ -9,26 +9,48 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.errors import ApiError, api_error_handler
+from app.core.logging import configure_logging
 from app.routers import inventory  # noqa: F401 — additional routers registered below
 
+configure_logging()
+
 app = FastAPI(
+
     title="SwasthyaOps AI API",
     version="1.0.0",
     docs_url=None,  # OpenAPI served at /v1/openapi.json for authenticated users only
     openapi_url="/v1/openapi.json",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.add_exception_handler(ApiError, api_error_handler)
 
+
+
+from app.core.context import active_trace_id
 
 @app.middleware("http")
 async def trace_context(request: Request, call_next):
     header = request.headers.get("x-cloud-trace-context", "")
-    request.state.trace_id = header.split("/")[0] if header else str(uuid.uuid4())
-    response = await call_next(request)
-    response.headers["x-trace-id"] = request.state.trace_id
-    return response
+    trace_id = header.split("/")[0] if header else str(uuid.uuid4())
+    request.state.trace_id = trace_id
+    token = active_trace_id.set(trace_id)
+    try:
+        response = await call_next(request)
+        response.headers["x-trace-id"] = trace_id
+        return response
+    finally:
+        active_trace_id.reset(token)
+
 
 
 app.include_router(inventory.router)

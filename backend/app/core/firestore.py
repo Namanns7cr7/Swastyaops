@@ -13,7 +13,10 @@ from google.cloud import firestore
 from app.core import pubsub
 from app.core.config import settings
 
+import logging
+
 _db: firestore.Client | None = None
+logger = logging.getLogger(__name__)
 
 
 def db() -> firestore.Client:
@@ -41,12 +44,20 @@ def write_and_publish(
             txn.set(ref, data | {"_published": False, "updated_at": firestore.SERVER_TIMESTAMP}, merge=merge)
 
     _txn(db().transaction())
+    logger.info("Committed transaction with %d writes.", len(writes), extra={"extra_attrs": {"writes_count": len(writes)}})
     try:
         pubsub.publish(event)
         marker_ref.update({"_published": True})
-    except Exception:  # noqa: BLE001 — reconciler owns recovery; commit already durable
-        pass
+        logger.info("Published domain event %s successfully.", event["event_id"])
+    except Exception as exc:  # noqa: BLE001 — reconciler owns recovery; commit already durable
+        logger.warning(
+            "Failed to publish domain event %s. Reconciler will recover.",
+            event["event_id"],
+            exc_info=True,
+            extra={"extra_attrs": {"event_id": event["event_id"]}}
+        )
     return event["event_id"]
+
 
 
 def is_idempotent_replay(key: str, payload_digest: str) -> bool:
@@ -55,15 +66,18 @@ def is_idempotent_replay(key: str, payload_digest: str) -> bool:
 
     Contract: docs/05_API_Specification.md §5.
     """
+    from google.api_core.exceptions import AlreadyExists as GcpAlreadyExists
     from app.core.errors import AlreadyExists
 
     ref = db().collection("idempotency_keys").document(key)
-    snap = ref.get()
-    if snap.exists:
-        if snap.get("digest") != payload_digest:
+    try:
+        ref.create({"digest": payload_digest, "created_at": firestore.SERVER_TIMESTAMP})
+        return False
+    except GcpAlreadyExists:
+        snap = ref.get()
+        if snap.exists and snap.get("digest") != payload_digest:
             raise AlreadyExists(
                 "Idempotency key reused with a different payload.", reason="IDEMPOTENCY_MISMATCH"
             )
         return True
-    ref.set({"digest": payload_digest, "created_at": firestore.SERVER_TIMESTAMP})
-    return False
+
