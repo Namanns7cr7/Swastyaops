@@ -45,7 +45,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = sessionStorage.getItem(MOCK_USER_KEY);
       if (stored) {
-        setUser(JSON.parse(stored) as any);
+        const mockUser = JSON.parse(stored);
+        // Restore stripped functions
+        mockUser.getIdToken = async () => 'mock-token';
+        mockUser.getIdTokenResult = async () => ({
+          claims: {
+            role: 'district_admin',
+            district_ids: ['sikar-raj'],
+            facility_ids: [],
+          },
+        });
+        setUser(mockUser as any);
         setLoading(false);
         return;
       }

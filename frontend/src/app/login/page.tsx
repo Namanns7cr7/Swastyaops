@@ -76,7 +76,6 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signInWithGoogle();
-      router.replace('/');
     } catch (e: unknown) {
       const code = (e as { code?: string })?.code ?? 'auth/unknown';
       setError(describeAuthError(code));
