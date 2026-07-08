@@ -198,49 +198,48 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     const count = getBadgeCount(item.icon);
 
                     const content = (
-                      <Stack
-                        component={Link}
-                        href={item.href}
-                        direction="row"
-                        alignItems="center"
-                        spacing={1.5}
-                        sx={{
-                          textDecoration: 'none',
-                          py: 1,
-                          px: collapsed ? 1.25 : 1.5,
-                          borderRadius: 2,
-                          bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : 'transparent',
-                          color: active ? 'primary.main' : 'text.secondary',
-                          fontWeight: active ? 600 : 500,
-                          transition: 'all 150ms',
-                          position: 'relative',
-                          '&:hover': {
-                            bgcolor: active ? alpha(theme.palette.primary.main, 0.16) : 'action.hover',
-                            color: active ? 'primary.main' : 'text.primary',
-                          },
-                        }}
-                      >
-                        <Badge
-                          badgeContent={collapsed ? count : 0}
-                          color={item.icon === 'alerts' ? 'error' : 'primary'}
-                          variant={collapsed ? 'dot' : 'standard'}
+                      <Link href={item.href} passHref style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1.5}
+                          sx={{
+                            py: 1,
+                            px: collapsed ? 1.25 : 1.5,
+                            borderRadius: 2,
+                            bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : 'transparent',
+                            color: active ? 'primary.main' : 'text.secondary',
+                            fontWeight: active ? 600 : 500,
+                            transition: 'all 150ms',
+                            position: 'relative',
+                            '&:hover': {
+                              bgcolor: active ? alpha(theme.palette.primary.main, 0.16) : 'action.hover',
+                              color: active ? 'primary.main' : 'text.primary',
+                            },
+                          }}
                         >
-                          <Icon sx={{ fontSize: 22, flexShrink: 0 }} />
-                        </Badge>
-                        {!collapsed && (
-                          <Typography variant="body2" sx={{ fontWeight: 'inherit', flex: 1, whiteSpace: 'nowrap' }}>
-                            {item.label}
-                          </Typography>
-                        )}
-                        {!collapsed && count > 0 && (
-                          <Chip
-                            size="small"
-                            label={count}
+                          <Badge
+                            badgeContent={collapsed ? count : 0}
                             color={item.icon === 'alerts' ? 'error' : 'primary'}
-                            sx={{ height: 20, minWidth: 20, fontSize: 11, fontWeight: 700 }}
-                          />
-                        )}
-                      </Stack>
+                            variant={collapsed ? 'dot' : 'standard'}
+                          >
+                            <Icon sx={{ fontSize: 22, flexShrink: 0 }} />
+                          </Badge>
+                          {!collapsed && (
+                            <Typography variant="body2" sx={{ fontWeight: 'inherit', flex: 1, whiteSpace: 'nowrap' }}>
+                              {item.label}
+                            </Typography>
+                          )}
+                          {!collapsed && count > 0 && (
+                            <Chip
+                              size="small"
+                              label={count}
+                              color={item.icon === 'alerts' ? 'error' : 'primary'}
+                              sx={{ height: 20, minWidth: 20, fontSize: 11, fontWeight: 700 }}
+                            />
+                          )}
+                        </Stack>
+                      </Link>
                     );
 
                     return collapsed ? (
@@ -472,43 +471,52 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             const count = getBadgeCount(item.icon);
 
             return (
-              <Stack
+              <Link
                 key={item.href}
-                component={Link}
                 href={item.href}
-                aria-current={active ? 'page' : undefined}
-                alignItems="center"
-                spacing={0.25}
-                sx={{
+                passHref
+                style={{
                   textDecoration: 'none',
-                  py: 0.5,
-                  px: 1,
                   flex: 1,
-                  borderRadius: 2,
-                  color: active ? 'primary.main' : 'text.secondary',
-                  '&:hover': { bgcolor: 'action.hover' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                 }}
               >
-                <Badge badgeContent={count} color={item.icon === 'alerts' ? 'error' : 'primary'} variant="dot">
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 44,
-                      height: 28,
-                      borderRadius: 4,
-                      bgcolor: active ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
-                      transition: 'background-color 150ms',
-                    }}
-                  >
-                    <Icon sx={{ fontSize: 20 }} />
-                  </Box>
-                </Badge>
-                <Typography sx={{ fontSize: 10, fontWeight: active ? 700 : 500, mt: 0.25 }}>
-                  {item.short}
-                </Typography>
-              </Stack>
+                <Stack
+                  aria-current={active ? 'page' : undefined}
+                  alignItems="center"
+                  spacing={0.25}
+                  sx={{
+                    py: 0.5,
+                    px: 1,
+                    width: '100%',
+                    borderRadius: 2,
+                    color: active ? 'primary.main' : 'text.secondary',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Badge badgeContent={count} color={item.icon === 'alerts' ? 'error' : 'primary'} variant="dot">
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 44,
+                        height: 28,
+                        borderRadius: 4,
+                        bgcolor: active ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
+                        transition: 'background-color 150ms',
+                      }}
+                    >
+                      <Icon sx={{ fontSize: 20 }} />
+                    </Box>
+                  </Badge>
+                  <Typography sx={{ fontSize: 10, fontWeight: active ? 700 : 500, mt: 0.25 }}>
+                    {item.short}
+                  </Typography>
+                </Stack>
+              </Link>
             );
           })}
         </Stack>

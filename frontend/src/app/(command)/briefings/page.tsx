@@ -96,6 +96,16 @@ export default function BriefingsPage() {
       utterance.lang = lang === 'en' ? 'en-IN' : 'hi-IN';
       utterance.rate = 0.95;
 
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices();
+        const matchingVoice = voices.find((v) =>
+          v.lang.toLowerCase().replace('_', '-').startsWith(lang === 'en' ? 'en' : 'hi')
+        );
+        if (matchingVoice) {
+          utterance.voice = matchingVoice;
+        }
+      }
+
       utterance.onend = () => setIsPlaying(false);
       utterance.onerror = () => setIsPlaying(false);
 
