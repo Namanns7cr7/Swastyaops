@@ -8,17 +8,17 @@
  */
 
 export const light = {
-  surface: '#f8f9fa',
-  surfaceDim: '#d7dade',
+  surface: '#f7f7f8',
+  surfaceDim: '#e4e4e7',
   surfaceContainerLowest: '#ffffff',
-  surfaceContainerLow: '#f1f3f4',
-  surfaceContainer: '#e8eaed',
-  surfaceContainerHigh: '#e1e3e6',
-  surfaceContainerHighest: '#dadce0',
-  onSurface: '#1f1f1f',
-  onSurfaceVariant: '#444746',
-  outline: '#747775',
-  outlineVariant: '#c4c7c5',
+  surfaceContainerLow: '#f2f2f3',
+  surfaceContainer: '#ececee',
+  surfaceContainerHigh: '#e6e6e9',
+  surfaceContainerHighest: '#dfdfe3',
+  onSurface: '#18181b',
+  onSurfaceVariant: '#52525b',
+  outline: '#a1a1aa',
+  outlineVariant: '#e4e4e7',
   primary: '#1a73e8',
   onPrimary: '#ffffff',
   primaryContainer: '#d2e3fc',
@@ -34,19 +34,22 @@ export const light = {
   onErrorContainer: '#a50e0e',
 } as const;
 
-/** Dark palette from design_enterprise_precision_dark.md (kept in exact sync). */
+/**
+ * Dark palette — "modern black" refresh (2026-07): near-black zinc surfaces
+ * replacing the original design_enterprise_precision_dark.md greys.
+ */
 export const dark = {
-  surface: '#1f1f1f',
-  surfaceDim: '#1f1f1f',
-  surfaceContainerLowest: '#131314',
-  surfaceContainerLow: '#2d2e30',
-  surfaceContainer: '#333538',
-  surfaceContainerHigh: '#3c3e42',
-  surfaceContainerHighest: '#48494d',
-  onSurface: '#e3e3e3',
-  onSurfaceVariant: '#c4c7c5',
-  outline: '#8e918f',
-  outlineVariant: '#444746',
+  surface: '#0a0a0c',
+  surfaceDim: '#050506',
+  surfaceContainerLowest: '#111114',
+  surfaceContainerLow: '#17171b',
+  surfaceContainer: '#1d1d22',
+  surfaceContainerHigh: '#242429',
+  surfaceContainerHighest: '#2c2c32',
+  onSurface: '#f2f2f4',
+  onSurfaceVariant: '#a6a7ad',
+  outline: '#5c5d66',
+  outlineVariant: '#26262c',
   primary: '#8ab4f8',
   onPrimary: '#062e6f',
   primaryContainer: '#1a73e8',

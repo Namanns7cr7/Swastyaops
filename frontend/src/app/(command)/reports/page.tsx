@@ -17,7 +17,7 @@ import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
-import { reports, type Report } from '@/lib/demo-data';
+import { reports, type ReportRow as Report } from '@/lib/demo-data';
 import PageHeader from '@/components/PageHeader';
 
 const KIND_LABEL: Record<Report['kind'], string> = {

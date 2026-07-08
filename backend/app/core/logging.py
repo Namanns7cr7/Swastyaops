@@ -22,16 +22,11 @@ class GoogleCloudJsonFormatter(logging.Formatter):
         self.project_id = project_id
 
     def format(self, record: logging.LogRecord) -> str:
-        # Map python levels to GCP severity
-        severity = record.levelname
-        if severity == "WARNING":
-            severity = "WARNING"
-        elif severity == "CRITICAL":
-            severity = "CRITICAL"
-
+        # Python level names double as GCP severities (DEBUG/INFO/WARNING/ERROR/CRITICAL).
+        timestamp = datetime.fromtimestamp(record.created, tz=UTC).isoformat()
         log_payload: dict[str, Any] = {
-            "severity": severity,
-            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat() + "Z",
+            "severity": record.levelname,
+            "timestamp": timestamp.replace("+00:00", "Z"),
             "message": record.getMessage(),
             "logger": record.name,
             "module": record.module,
@@ -46,9 +41,9 @@ class GoogleCloudJsonFormatter(logging.Formatter):
         from app.core.context import active_trace_id
         trace_id = getattr(record, "trace_id", None) or active_trace_id.get(None)
         if trace_id:
-            log_payload["logging.googleapis.com/trace"] = f"projects/{self.project_id}/traces/{trace_id}"
+            trace_resource = f"projects/{self.project_id}/traces/{trace_id}"
+            log_payload["logging.googleapis.com/trace"] = trace_resource
             log_payload["trace_id"] = trace_id
-
 
         span_id = getattr(record, "span_id", None)
         if span_id:
@@ -64,7 +59,7 @@ class GoogleCloudJsonFormatter(logging.Formatter):
 def configure_logging() -> None:
     """Configures the root logger to output structured JSON to stdout."""
     root = logging.getLogger()
-    
+
     # Remove existing handlers to avoid duplicate formats
     for handler in list(root.handlers):
         root.removeHandler(handler)

@@ -6,28 +6,47 @@ docs/07_Agent_Design.md; tools are the only data access agents have (ADR-0004).
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from app.agents.tools import base as base_tools
 from app.core.config import settings
 
-PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
+
+def _find_prompts_dir() -> Path:
+    """Repo layout: <root>/prompts beside backend/; container layout: /srv/prompts
+    beside /srv/app (backend/Dockerfile)."""
+    here = Path(__file__).resolve()
+    for base in (here.parents[3], here.parents[2]):
+        candidate = base / "prompts"
+        if candidate.is_dir():
+            return candidate
+    raise FileNotFoundError("prompts/ directory not found relative to the app package")
+
+
+PROMPTS_DIR = _find_prompts_dir()
 
 AGENT_TOOLS: dict[str, list[Callable[..., Any]]] = {
     "planner": base_tools.BASE + [base_tools.dispatch_task, base_tools.get_plan_status],
-    "inventory": base_tools.BASE + [base_tools.find_donor_facilities, base_tools.get_indent_calendar],
+    "inventory": base_tools.BASE
+    + [base_tools.find_donor_facilities, base_tools.get_indent_calendar],
     "forecast": base_tools.BASE + [base_tools.get_model_metrics],
-    "disease_intelligence": base_tools.BASE + [base_tools.get_idsp_reports, base_tools.spatial_cluster],
-    "doctor": base_tools.BASE + [base_tools.get_attendance_history, base_tools.get_sanctioned_vs_actual],
+    "disease_intelligence": base_tools.BASE
+    + [base_tools.get_idsp_reports, base_tools.spatial_cluster],
+    "doctor": base_tools.BASE
+    + [base_tools.get_attendance_history, base_tools.get_sanctioned_vs_actual],
     "bed": base_tools.BASE + [base_tools.find_available_beds],
     "laboratory": base_tools.BASE + [base_tools.find_alternative_lab],
-    "recommendation": base_tools.BASE + [base_tools.create_recommendation, base_tools.take_validity_snapshot],
+    "recommendation": base_tools.BASE
+    + [base_tools.create_recommendation, base_tools.take_validity_snapshot],
     "report": base_tools.BASE + [base_tools.get_kpi_series, base_tools.request_render],
-    "notification": base_tools.BASE + [base_tools.resolve_recipients, base_tools.enqueue_notification],
-    "executive_briefing": base_tools.BASE + [base_tools.get_overnight_delta, base_tools.request_render],
+    "notification": base_tools.BASE
+    + [base_tools.resolve_recipients, base_tools.enqueue_notification],
+    "executive_briefing": base_tools.BASE
+    + [base_tools.get_overnight_delta, base_tools.request_render],
 }
 
 _FRONTMATTER = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -41,7 +60,8 @@ class AgentApp:
     model: str
     tools: list[Callable[..., Any]]
 
-    async def run(self, *, task: dict, district_id: str, run_ref) -> dict:
+    async def run(self, *, task: dict[str, Any], district_id: str,
+                  run_ref: Any) -> dict[str, Any]:
         """Execute one task through the Agent Engine tool loop.
 
         The loop itself is Vertex AI Agent Engine (managed sessions, constrained

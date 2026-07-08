@@ -4,20 +4,24 @@ Routers are thin: auth → validate → Firestore txn → event. Long work is di
 to Pub/Sub, never done in-request (docs/02_TRD.md §2).
 """
 
+import logging
 import uuid
+from collections.abc import Awaitable, Callable
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
+from app.core.context import active_trace_id
 from app.core.errors import ApiError, api_error_handler
 from app.core.logging import configure_logging
-from app.routers import inventory  # noqa: F401 — additional routers registered below
+from app.routers import inventory, facilities, footfall, attendance
 
 configure_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
-
     title="SwasthyaOps AI API",
     version="1.0.0",
     docs_url=None,  # OpenAPI served at /v1/openapi.json for authenticated users only
@@ -26,20 +30,28 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=settings().cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.add_exception_handler(ApiError, api_error_handler)
+# Starlette's signature wants (Request, Exception); ours narrows to ApiError.
+app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
 
 
+@app.exception_handler(Exception)
+async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Last-resort handler: same AIP-193 envelope, no internal details leaked (docs/05 §4)."""
+    logger.error("Unhandled exception on %s %s", request.method, request.url.path, exc_info=exc)
+    return api_error_handler(request, ApiError("An internal error occurred."))
 
-from app.core.context import active_trace_id
 
 @app.middleware("http")
-async def trace_context(request: Request, call_next):
+async def trace_context(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
     header = request.headers.get("x-cloud-trace-context", "")
     trace_id = header.split("/")[0] if header else str(uuid.uuid4())
     request.state.trace_id = trace_id
@@ -54,14 +66,19 @@ async def trace_context(request: Request, call_next):
 
 
 app.include_router(inventory.router)
+app.include_router(facilities.router)
+app.include_router(footfall.router)
+app.include_router(attendance.router)
+
 # Remaining routers land per docs/11_Implementation_Plan.md sprint order:
+# Trigger reload S2
 #   S2: facilities, footfall, attendance     S3: sync, beds, labs
 #   S5: alerts                               S6–7: recommendations, reports, briefings
 #   S10: query (NL), admin, me
 
 
 @app.get("/healthz", include_in_schema=False)
-async def healthz() -> dict:
+async def healthz() -> dict[str, str]:
     return {"status": "ok"}
 
 

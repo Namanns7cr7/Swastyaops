@@ -14,7 +14,8 @@ class ApiError(Exception):
     http = 500
     status = "INTERNAL"
 
-    def __init__(self, message: str, reason: str | None = None, metadata: dict[str, Any] | None = None):
+    def __init__(self, message: str, reason: str | None = None,
+                 metadata: dict[str, Any] | None = None):
         self.message = message
         self.reason = reason
         self.metadata = metadata or {}
@@ -61,7 +62,8 @@ def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
     trace_id = getattr(request.state, "trace_id", None)
     details = []
     if exc.reason:
-        details.append({"reason": exc.reason, "metadata": {k: str(v) for k, v in exc.metadata.items()}})
+        details.append({"reason": exc.reason,
+                        "metadata": {k: str(v) for k, v in exc.metadata.items()}})
     return JSONResponse(
         status_code=exc.http,
         content={"error": {"code": exc.http, "status": exc.status, "message": exc.message,

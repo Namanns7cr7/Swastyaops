@@ -21,9 +21,13 @@ export const app = getApps()[0] ?? initializeApp(config);
 export const auth = getAuth(app);
 
 // Offline-first: full local mirror of the user's scoped data (NFR-4, 72h window).
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-});
+// IndexedDB persistence only exists in the browser; SSR gets a memory-backed instance.
+export const db =
+  typeof window === 'undefined'
+    ? initializeFirestore(app, {})
+    : initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      });
 
 if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });

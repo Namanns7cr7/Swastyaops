@@ -11,8 +11,8 @@ from google.cloud import firestore as fs
 from uuid_extensions import uuid7str
 
 from app.core.auth import Principal, require_roles
-from app.core.errors import FailedPrecondition, NotFound
-from app.core.firestore import db, is_idempotent_replay, write_and_publish
+from app.core.errors import ApiError, FailedPrecondition, NotFound
+from app.core.firestore import db, get_doc, is_idempotent_replay, write_and_publish
 from app.core.pubsub import envelope
 from app.models.schemas import InventoryTransactionIn, InventoryTransactionOut, TxnType
 
@@ -31,7 +31,7 @@ async def create_transaction(
     principal: Principal = require_roles("pharmacist", "facility_incharge"),
 ) -> InventoryTransactionOut:
     principal.assert_facility(facility_id)
-    facility = db().collection("facilities").document(facility_id).get()
+    facility = get_doc(db().collection("facilities").document(facility_id))
     if not facility.exists:
         raise NotFound("Facility not found.")
     district_id = facility.get("district_id")
@@ -42,14 +42,17 @@ async def create_transaction(
         if is_idempotent_replay(idempotency_key, digest):
             prior = (db().collection_group("ledger")
                      .where("idempotency_key", "==", idempotency_key).limit(1).get())
-            return InventoryTransactionOut(**prior[0].to_dict()["response_snapshot"])
+            snapshot = prior[0].to_dict() if prior else None
+            if not snapshot:
+                raise ApiError("Idempotency key recorded but prior response is missing.")
+            return InventoryTransactionOut(**snapshot["response_snapshot"])
 
     item_ref = (db().collection("facilities").document(facility_id)
                 .collection("inventory").document(body.item_code))
-    item = item_ref.get()
+    item = get_doc(item_ref)
     if not item.exists:
         raise NotFound(f"Item {body.item_code} not in facility catalog.")
-    item_data = item.to_dict()
+    item_data = item.to_dict() or {}
     current = item_data["current_stock"]
     delta = SIGNED[body.type] * body.qty
     if current + delta < 0:
@@ -62,7 +65,8 @@ async def create_transaction(
 
     burn = item_data.get("avg_daily_consumption") or 0
     below_risk_cover = burn and balance / burn < RISK_COVER_DAYS
-    warning = "STOCK_RISK: below 14-day cover based on current burn rate" if below_risk_cover else None
+    warning = ("STOCK_RISK: below 14-day cover based on current burn rate"
+               if below_risk_cover else None)
 
     out = InventoryTransactionOut(txn_id=txn_id, item_code=body.item_code,
                                   balance_after=balance,

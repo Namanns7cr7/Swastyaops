@@ -4,7 +4,7 @@ test: tests/contract/test_openapi_drift.py)."""
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, PositiveInt
 
@@ -50,6 +50,26 @@ class FootfallIn(BaseModel):
     recorded_at: datetime
 
 
+class AttendanceStatus(StrEnum):
+    present = "present"
+    absent = "absent"
+    on_duty_elsewhere = "on_duty_elsewhere"
+    leave = "leave"
+
+
+class AttendanceEntry(BaseModel):
+    staff_id: str
+    name: str
+    role: str
+    status: AttendanceStatus
+    leave_type: str | None = None
+
+
+class AttendanceMarkIn(BaseModel):
+    entries: list[AttendanceEntry]
+
+
+
 class Severity(StrEnum):
     critical = "critical"
     high = "high"
@@ -68,7 +88,7 @@ class AlertStatus(StrEnum):
 class Citation(BaseModel):
     kind: Literal["metric", "forecast", "event", "dataset", "recommendation", "memory"]
     ref: str
-    value: dict | None = None
+    value: dict[str, Any] | None = None
 
 
 class AlertOut(BaseModel):
@@ -129,7 +149,7 @@ class RecommendationOut(BaseModel):
 
 
 class ApproveRequest(BaseModel):
-    edits: list[dict] | None = None  # RFC 6902 JSON Patch over /actions
+    edits: list[dict[str, Any]] | None = None  # RFC 6902 JSON Patch over /actions
 
 
 class RejectRequest(BaseModel):
@@ -140,7 +160,7 @@ class SyncMutation(BaseModel):
     idempotency_key: str
     method: Literal["POST", "PUT"]
     path: str
-    payload: dict
+    payload: dict[str, Any]
 
 
 class SyncBatchIn(BaseModel):
@@ -152,4 +172,4 @@ class SyncItemResult(BaseModel):
     status_code: int
     replayed: bool = False
     warning: str | None = None
-    error: dict | None = None
+    error: dict[str, Any] | None = None

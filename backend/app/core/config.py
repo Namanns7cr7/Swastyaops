@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     idempotency_ttl_hours: int = 48
     stale_facility_hours: int = 48
 
+    # Browser origins allowed on /v1 (svc-api). Terraform injects the hosted frontend
+    # origin per env (e.g. '["https://swasthyaops-prod.web.app"]').
+    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+
     model_config = {"env_prefix": "SWASTHYAOPS_"}
 
     def bucket(self, kind: str) -> str:

@@ -9,6 +9,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { buildTheme } from '@/theme/theme';
+import { AuthProvider } from '@/lib/auth';
 
 interface ColorModeContextType {
   mode: 'light' | 'dark';
@@ -56,21 +57,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const theme = useMemo(() => buildTheme(mode), [mode]);
 
-  // Prevent flash of unstyled content during hydration
-  if (!mounted) {
-    return (
-      <ThemeProvider theme={buildTheme('light')}>
-        <CssBaseline />
-        <div style={{ visibility: 'hidden' }}>{children}</div>
-      </ThemeProvider>
-    );
-  }
-
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {children}
+        <div style={{ visibility: mounted ? 'visible' : 'hidden' }}>
+          <AuthProvider>{children}</AuthProvider>
+        </div>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );

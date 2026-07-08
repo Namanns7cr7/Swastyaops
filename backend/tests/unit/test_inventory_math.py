@@ -15,14 +15,16 @@ def test_signed_direction_covers_every_txn_type():
     assert all(s in (-1, 1) for s in SIGNED.values())
 
 
-@given(current=st.integers(min_value=0, max_value=10_000), qty=st.integers(min_value=1, max_value=10_000))
+@given(current=st.integers(min_value=0, max_value=10_000),
+       qty=st.integers(min_value=1, max_value=10_000))
 def test_issue_never_goes_negative(current: int, qty: int):
     delta = SIGNED[TxnType.issue] * qty
     allowed = current + delta >= 0
     assert allowed == (qty <= current)
 
 
-@pytest.mark.parametrize(("stock", "burn", "risky"), [(50, 10, True), (200, 10, False), (140, 10, False), (139, 10, True)])
+@pytest.mark.parametrize(("stock", "burn", "risky"),
+                         [(50, 10, True), (200, 10, False), (140, 10, False), (139, 10, True)])
 def test_risk_warning_threshold(stock: int, burn: float, risky: bool):
     assert (stock / burn < RISK_COVER_DAYS) is risky
 

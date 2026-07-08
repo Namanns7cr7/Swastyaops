@@ -8,6 +8,7 @@ Representative implementations below; the per-agent specialist tools referenced 
 app/agents/registry.py follow the same pattern and land per the sprint plan.
 """
 
+from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
@@ -15,13 +16,15 @@ from pydantic import BaseModel, Field
 
 from app.core.context import active_district_id
 from app.core.errors import PermissionDenied
-from app.core.firestore import db
+from app.core.firestore import db, get_doc
+
+ToolFn = Callable[..., dict[str, Any]]
 
 
-def enforce_tenancy(fn):
+def enforce_tenancy(fn: ToolFn) -> ToolFn:
     """Enforces that the parameter district_id matches the thread's active_district_id context."""
     @wraps(fn)
-    def wrapper(q: Any, *args, **kwargs):
+    def wrapper(q: Any, *args: Any, **kwargs: Any) -> dict[str, Any]:
         expected = active_district_id.get(None)
         if expected is not None:
             actual = getattr(q, "district_id", None)
@@ -29,8 +32,9 @@ def enforce_tenancy(fn):
                 actual = q.get("district_id")
             if actual != expected:
                 raise PermissionDenied(
-                    f"Tenancy violation: tool requested district {actual} but active session is bound to {expected}.",
-                    reason="TENANCY_VIOLATION"
+                    f"Tenancy violation: tool requested district {actual} "
+                    f"but active session is bound to {expected}.",
+                    reason="TENANCY_VIOLATION",
                 )
         return fn(q, *args, **kwargs)
     return wrapper
@@ -58,8 +62,9 @@ def query_stock_levels(q: StockQuery) -> dict[str, Any]:
          "avg_daily_consumption": d.get("avg_daily_consumption")}
         for d in coll.limit(q.limit).stream()
     ]
+    citation_ref = f"inventory?district={q.district_id}&item={q.item_code}"
     return {"rows": rows, "count": len(rows),
-            "citation": {"kind": "metric", "ref": f"inventory?district={q.district_id}&item={q.item_code}"}}
+            "citation": {"kind": "metric", "ref": citation_ref}}
 
 
 class FacilityQuery(BaseModel):
@@ -69,11 +74,12 @@ class FacilityQuery(BaseModel):
 
 @enforce_tenancy
 def get_facility(q: FacilityQuery) -> dict[str, Any]:
-    snap = db().collection("facilities").document(q.facility_id).get()
+    snap = get_doc(db().collection("facilities").document(q.facility_id))
     if not snap.exists or snap.get("district_id") != q.district_id:
         return {"error": "not_found"}
-    data = snap.to_dict()
-    keep = ("name", "type", "block", "status", "health_score", "snapshot", "sanctioned", "services")
+    data = snap.to_dict() or {}
+    keep = ("name", "type", "block", "status", "health_score", "snapshot",
+            "sanctioned", "services")
     return {k: data.get(k) for k in keep} | {
         "citation": {"kind": "metric", "ref": f"facilities/{q.facility_id}"}}
 
@@ -89,23 +95,71 @@ def remember_fact(q: RememberFact) -> dict[str, Any]:
     """Explicit Memory Bank write — surfaced in admin UI S15, deletable (docs/13 §8)."""
     from vertexai import agent_engines  # deferred import; memory bank client
 
-    agent_engines.MemoryBank(scope=f"district/{q.district_id}").store(
-        fact=q.fact, source=f"agent:{q.agent}")
+    agent_engines.MemoryBank(  # type: ignore[attr-defined]  # preview API, unstubbed
+        scope=f"district/{q.district_id}").store(fact=q.fact, source=f"agent:{q.agent}")
     return {"stored": True}
 
 
 
+from google.cloud import firestore
+
+class ListFacilitiesQuery(BaseModel):
+    district_id: str
+    type: str | None = None
+    block: str | None = None
+
+
+@enforce_tenancy
+def list_facilities(q: ListFacilitiesQuery) -> dict[str, Any]:
+    """List all facilities in the district. Filter optionally by type or block."""
+    coll = db().collection("facilities").where("district_id", "==", q.district_id)
+    if q.type:
+        coll = coll.where("type", "==", q.type)
+    if q.block:
+        coll = coll.where("block", "==", q.block)
+    
+    rows = [
+        {"facility_id": d.id, "name": d.get("name"), "type": d.get("type"), "block": d.get("block"), "health_score": d.get("health_score", 0)}
+        for d in coll.stream()
+    ]
+    return {"rows": rows, "count": len(rows), "citation": {"kind": "metric", "ref": f"facilities?district={q.district_id}"}}
+
+
+class StockLedgerQuery(BaseModel):
+    district_id: str
+    facility_id: str
+    item_code: str
+    limit: int = Field(default=20, le=50)
+
+
+@enforce_tenancy
+def get_stock_ledger(q: StockLedgerQuery) -> dict[str, Any]:
+    """Get the audit ledger logs for a specific inventory item in a facility."""
+    facility = get_doc(db().collection("facilities").document(q.facility_id))
+    if not facility.exists or facility.get("district_id") != q.district_id:
+        return {"error": "not_found"}
+        
+    coll = (db().collection("facilities").document(q.facility_id)
+            .collection("inventory").document(q.item_code)
+            .collection("ledger").order_by("created_at", direction=firestore.Query.DESCENDING))
+            
+    rows = [
+        {"txn_id": d.id, "type": d.get("type"), "qty": d.get("qty"), "balance_after": d.get("balance_after"),
+         "source": d.get("source"), "recorded_at": str(d.get("recorded_at") or ""), "created_by": d.get("created_by")}
+        for d in coll.limit(q.limit).stream()
+    ]
+    return {"rows": rows, "count": len(rows), "citation": {"kind": "metric", "ref": f"facilities/{q.facility_id}/inventory/{q.item_code}/ledger"}}
+
+
 # ── Registered-but-sprint-scheduled tools (docs/11 sprint order). Each raises until
 # implemented so a prompt referencing it fails loudly in evals, never silently. ──────
-def _pending(name: str, sprint: str):
+def _pending(name: str, sprint: str) -> ToolFn:
     def _fn(*_a: Any, **_k: Any) -> dict[str, Any]:
         raise NotImplementedError(f"tool {name} lands in {sprint} (docs/11_Implementation_Plan.md)")
     _fn.__name__ = name
     return _fn
 
 
-list_facilities = _pending("list_facilities", "Sprint 2")
-get_stock_ledger = _pending("get_stock_ledger", "Sprint 2")
 query_curated = _pending("query_curated", "Sprint 5")
 get_forecast = _pending("get_forecast", "Sprint 5")
 list_open_alerts = _pending("list_open_alerts", "Sprint 5")

@@ -9,7 +9,7 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
-from google.cloud import pubsub_v1
+import google.cloud.pubsub_v1 as pubsub_v1
 from uuid_extensions import uuid7str
 
 from app.core.config import settings
@@ -74,7 +74,8 @@ def publish(event: dict[str, Any], *, agent: str | None = None) -> str:
     """Publish an enveloped event. facility.* topics are ordered per facility (TRD §3)."""
     topic = event["event_type"]
     if topic not in TOPICS:
-        raise ValueError(f"Topic '{topic}' is not in the registry (architecture/pubsub_topics.yaml)")
+        raise ValueError(
+            f"Topic '{topic}' is not in the registry (architecture/pubsub_topics.yaml)")
     attrs: dict[str, str] = {"event_type": topic, "district_id": event["district_id"]}
     if agent:
         attrs["agent"] = agent  # subscription filters key on this (agents.tasks.dispatch)
@@ -87,4 +88,5 @@ def publish(event: dict[str, Any], *, agent: str | None = None) -> str:
         **attrs,
         **kwargs,
     )
-    return future.result(timeout=10)
+    message_id: str = future.result(timeout=10)
+    return message_id

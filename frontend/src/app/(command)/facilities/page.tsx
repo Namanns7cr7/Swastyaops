@@ -23,7 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useTheme, alpha } from '@mui/material/styles';
 import { status as statusTokens } from '@/theme/tokens';
-import { district, facilities, type Facility } from '@/lib/demo-data';
+import { district, facilities } from '@/lib/demo-data';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/EmptyState';
 import StatusDot from '@/components/StatusDot';

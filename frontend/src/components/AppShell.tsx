@@ -36,7 +36,15 @@ import { sidebar } from '@/theme/tokens';
 import Breadcrumbs from './Breadcrumbs';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ButtonBase from '@mui/material/ButtonBase';
+import Divider from '@mui/material/Divider';
+import { useRouter } from 'next/navigation';
 import { useColorMode } from '@/app/providers';
+import { useAuth } from '@/lib/auth';
 
 const ICONS: Record<NavItem['icon'], typeof SpaceDashboardOutlinedIcon> = {
   dashboard: SpaceDashboardOutlinedIcon,
@@ -50,9 +58,28 @@ const ICONS: Record<NavItem['icon'], typeof SpaceDashboardOutlinedIcon> = {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const { mode, toggleColorMode } = useColorMode();
+  const { user, signOutUser } = useAuth();
+  const router = useRouter();
   const desktop = useMediaQuery(theme.breakpoints.up('lg'));
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [profileAnchor, setProfileAnchor] = useState<HTMLElement | null>(null);
+
+  const displayName = user?.displayName ?? 'Signed in';
+  const email = user?.email ?? '';
+  const initials =
+    user?.displayName
+      ?.split(' ')
+      .map((p) => p[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() ?? 'U';
+
+  const handleSignOut = async () => {
+    setProfileAnchor(null);
+    await signOutUser();
+    router.replace('/login');
+  };
 
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
@@ -125,7 +152,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                boxShadow: '0 2px 6px rgba(26,115,232,0.3)',
+                boxShadow: `0 2px 6px ${alpha(theme.palette.primary.main, 0.3)}`,
               }}
             >
               <HealthAndSafetyIcon sx={{ fontSize: 22 }} />
@@ -233,17 +260,36 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Box sx={{ p: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
               {!collapsed && (
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minWidth: 0, px: 0.5 }}>
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13, fontWeight: 600 }}>MS</Avatar>
-                  <Stack sx={{ minWidth: 0 }}>
-                    <Typography variant="body2" noWrap sx={{ fontWeight: 600, fontSize: 13 }}>
-                      Dr. M. Sharma
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: 11 }}>
-                      District CMO · Sikar
-                    </Typography>
+                <ButtonBase
+                  onClick={(e) => setProfileAnchor(e.currentTarget)}
+                  sx={{
+                    borderRadius: 2,
+                    px: 0.5,
+                    py: 0.25,
+                    minWidth: 0,
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minWidth: 0 }}>
+                    <Avatar
+                      src={user?.photoURL ?? undefined}
+                      alt={displayName}
+                      sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13, fontWeight: 600 }}
+                    >
+                      {initials}
+                    </Avatar>
+                    <Stack sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" noWrap sx={{ fontWeight: 600, fontSize: 13 }}>
+                        {displayName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: 11, maxWidth: 140 }}>
+                        {email}
+                      </Typography>
+                    </Stack>
                   </Stack>
-                </Stack>
+                </ButtonBase>
               )}
               <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
                 <IconButton
@@ -301,7 +347,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 transition: 'all 150ms',
                 '&:focus-within': {
                   borderColor: 'primary.main',
-                  boxShadow: '0 0 0 2px rgba(26,115,232,0.15)',
+                  boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
                 },
               }}
             >
@@ -355,9 +401,45 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </Tooltip>
 
             {/* Mobile Avatar */}
-            {!desktop && <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13 }}>MS</Avatar>}
+            {!desktop && (
+              <ButtonBase onClick={(e) => setProfileAnchor(e.currentTarget)} sx={{ borderRadius: '50%' }}>
+                <Avatar
+                  src={user?.photoURL ?? undefined}
+                  alt={displayName}
+                  sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13 }}
+                >
+                  {initials}
+                </Avatar>
+              </ButtonBase>
+            )}
           </Toolbar>
         </AppBar>
+
+        {/* Profile menu (desktop footer + mobile avatar) */}
+        <Menu
+          anchorEl={profileAnchor}
+          open={Boolean(profileAnchor)}
+          onClose={() => setProfileAnchor(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          slotProps={{ paper: { sx: { minWidth: 220 } } }}
+        >
+          <Box sx={{ px: 2, py: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+              {displayName}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+              {email}
+            </Typography>
+          </Box>
+          <Divider />
+          <MenuItem onClick={handleSignOut} sx={{ fontSize: 13, py: 1 }}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Sign out
+          </MenuItem>
+        </Menu>
 
         {/* Page Content */}
         <Box sx={{ flex: 1, bgcolor: 'background.default' }}>{children}</Box>

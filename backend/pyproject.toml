@@ -42,11 +42,24 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S"]
-per-file-ignores = { "tests/*" = ["S101"] }
+# B008: `Depends(...)`-style factories in parameter defaults are the FastAPI idiom.
+per-file-ignores = { "tests/*" = ["S101"], "app/routers/*" = ["B008"] }
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+# These ship without type stubs or a py.typed marker.
+module = [
+    "uuid_extensions",
+    "vertexai",
+    "vertexai.*",
+    "firebase_admin",
+    "firebase_admin.*",
+    "google.cloud.pubsub_v1",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

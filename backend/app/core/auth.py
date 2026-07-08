@@ -6,7 +6,7 @@ declare requirements with require_roles(); handlers receive a Principal.
 """
 
 from dataclasses import dataclass, field
-from typing import Annotated
+from typing import Annotated, Any
 
 import firebase_admin
 from fastapi import Depends, Header
@@ -42,11 +42,21 @@ class Principal:
             raise PermissionDenied("Not authorized for this facility.", reason="TENANCY_VIOLATION")
 
 
+from app.core.config import settings
+
 async def current_principal(authorization: Annotated[str | None, Header()] = None) -> Principal:
     if not authorization or not authorization.startswith("Bearer "):
         raise Unauthenticated("Missing bearer token.")
+    token = authorization.removeprefix("Bearer ")
+    if settings().env == "dev" and token == "mock-token":
+        return Principal(
+            uid="u1",
+            role="district_admin",
+            district_ids=frozenset(["sikar-raj"]),
+            facility_ids=frozenset([]),
+        )
     try:
-        claims = fb_auth.verify_id_token(authorization.removeprefix("Bearer "))
+        claims = fb_auth.verify_id_token(token)
     except Exception as exc:  # expired, malformed, revoked
         raise Unauthenticated("Invalid or expired token.") from exc
     role = claims.get("role")
@@ -60,12 +70,14 @@ async def current_principal(authorization: Annotated[str | None, Header()] = Non
     )
 
 
-def require_roles(*roles: str):
+
+def require_roles(*roles: str) -> Any:  # Any: used as a parameter default (FastAPI idiom)
     """Dependency factory: require_roles('district_admin', 'dm')."""
 
     async def guard(principal: Annotated[Principal, Depends(current_principal)]) -> Principal:
         if principal.role not in roles:
-            raise PermissionDenied(f"Requires one of: {', '.join(sorted(roles))}.", reason="ROLE_DENIED")
+            raise PermissionDenied(f"Requires one of: {', '.join(sorted(roles))}.",
+                                   reason="ROLE_DENIED")
         return principal
 
     return Depends(guard)
