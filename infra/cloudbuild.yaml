@@ -17,6 +17,12 @@ steps:
     entrypoint: bash
     args: ["-c", "pip install -e '.[dev]' -q && ruff check app && pytest tests/unit -q"]
 
+  - id: prepare-prompts
+    name: gcr.io/cloud-builders/git
+    entrypoint: bash
+    args: ["-c", "cp -r prompts backend/prompts"]
+    waitFor: [test]
+
   - id: build-image
     name: gcr.io/cloud-builders/docker
     dir: backend
@@ -24,7 +30,7 @@ steps:
       - build
       - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/services/backend:git-${SHORT_SHA}
       - .
-    waitFor: [test]
+    waitFor: [prepare-prompts]
 
   - id: push
     name: gcr.io/cloud-builders/docker
@@ -55,9 +61,9 @@ steps:
     waitFor: [push]
 
   - id: smoke
-    name: python:3.12-slim
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     entrypoint: bash
-    args: ["-c", "pip install httpx -q && python scripts/smoke_test.py --project $PROJECT_ID --level smoke"]
+    args: ["-c", "pip3 install httpx -q && python3 scripts/smoke_test.py --project $PROJECT_ID --level smoke"]
     waitFor: [deploy]
 
   # staging/prod: canary 10% for 30 min, auto-promote or rollback (docs/02 §13).

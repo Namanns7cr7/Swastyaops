@@ -11,6 +11,7 @@ Usage: python scripts/smoke_test.py --project swasthyaops-dev [--level full]
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -20,9 +21,9 @@ import httpx
 SERVICES = ["svc-api", "svc-ingestion", "svc-agents", "svc-forecast", "svc-notify", "svc-reports"]
 REGION = "asia-south1"
 
-
 def run(cmd: list[str]) -> str:
-    return subprocess.check_output(cmd, text=True).strip()
+    use_shell = os.name == "nt"
+    return subprocess.check_output(cmd, text=True, shell=use_shell).strip()
 
 
 def service_url(project: str, svc: str) -> str:

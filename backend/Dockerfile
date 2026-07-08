@@ -7,7 +7,7 @@ WORKDIR /build
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir uv && uv pip install --system --no-cache -r pyproject.toml
 COPY app ./app
-COPY ../prompts /build/prompts
+COPY prompts /build/prompts
 
 FROM gcr.io/distroless/python3-debian12:nonroot
 WORKDIR /srv
