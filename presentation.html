@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwasthyaOps AI Presentation Deck</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#0B1120',
+              blue: '#1A73E8',
+              teal: '#0D9488',
+              dark: '#111827',
+              gray: '#9CA3AF',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .slide {
+        page-break-after: always !important;
+        break-after: page !important;
+        height: 100vh !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 2rem !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    .slide {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-width: 1100px;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen py-10 flex flex-col items-center justify-start gap-8">
+
+  <!-- Print Helper Banner (Visible only in Browser) -->
+  <div class="no-print bg-blue-600 text-white px-6 py-4 rounded-xl shadow-2xl max-w-4xl w-full text-center flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="text-left">
+      <h3 class="font-outfit font-bold text-lg">🖨️ Ready to Export as PDF</h3>
+      <p class="text-sm text-blue-100">Simply click the print button or press <b>Ctrl + P</b>, select "Save as PDF", set Layout to <b>Landscape</b>, and set Margins to <b>None</b>.</p>
+    </div>
+    <button onclick="window.print()" class="bg-white text-blue-600 font-bold px-6 py-2.5 rounded-lg hover:bg-blue-50 transition shadow-md">
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <!-- SLIDE 1: Title Slide (Dark Theme) -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-600/10 blur-3xl"></div>
+    <div class="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-teal-600/10 blur-3xl"></div>
+    
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 text-white">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+      </div>
+      <span class="font-outfit font-black text-2xl tracking-tight text-white">SwasthyaOps <span class="text-blue-500">AI</span></span>
+    </div>
+
+    <div class="my-auto space-y-4">
+      <h1 class="text-5xl font-outfit font-extrabold tracking-tight text-white leading-tight">
+        An AI Operating System <br>for District Healthcare
+      </h1>
+      <p class="text-xl text-slate-400 font-medium max-w-2xl">
+        Real-time operational intelligence, predictive stock forecasting, and human-in-the-loop AI interventions for District Health Officers.
+      </p>
+    </div>
+
+    <div class="flex justify-between items-center border-t border-slate-800/80 pt-6 text-sm text-slate-500 font-medium">
+      <div>Staging Environment: District Sikar, Rajasthan (~2.7M Population)</div>
+      <div>Slide 1 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: The Core Problem -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">The Core Problem</h2>
+      <span class="text-sm font-semibold tracking-wider text-blue-500 uppercase">Reaction Time Gap</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-12 my-auto">
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <h3 class="text-lg font-semibold text-slate-300">The Retroactive Reality</h3>
+          <p class="text-slate-400 leading-relaxed text-sm">
+            Current Health Management Information Systems (HMIS) gather data retrospectively. Reports are aggregated monthly and arrive <b>4 to 6 weeks late</b>. 
+          </p>
+        </div>
+        <div class="p-4 bg-red-950/40 border border-red-900/50 rounded-xl">
+          <p class="text-red-400 text-sm font-medium">
+            🚨 <b>The Result:</b> Medicine stock-outs and doctor absenteeism are discovered only after patients suffer or complain.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">Traditional Wait Time</span>
+          <span class="text-4xl font-extrabold text-red-500 font-outfit my-2">4-6 Wks</span>
+          <span class="text-slate-400 text-xs">For retrospective data to reach the district</span>
+        </div>
+        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">SwasthyaOps Latency</span>
+          <span class="text-4xl font-extrabold text-teal-400 font-outfit my-2">&lt; 8 Hours</span>
+          <span class="text-slate-400 text-xs">From local anomaly to approved intervention</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 2 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: The Solution Loop -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">The SwasthyaOps Loop</h2>
+      <span class="text-sm font-semibold tracking-wider text-teal-400 uppercase">Sense ➔ Forecast ➔ Draft ➔ Act</span>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6 my-auto">
+      <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 flex flex-col justify-between h-48">
+        <div class="space-y-2">
+          <span class="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-400 flex items-center justify-center font-bold text-sm">1</span>
+          <h4 class="font-bold text-white text-base">Real-Time Sensing</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">Pub/Sub captures operational updates (stock, attendance, bed status) instantly.</p>
+        </div>
+      </div>
+      <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 flex flex-col justify-between h-48">
+        <div class="space-y-2">
+          <span class="w-8 h-8 rounded-lg bg-teal-600/10 text-teal-400 flex items-center justify-center font-bold text-sm">2</span>
+          <h4 class="font-bold text-white text-base">Predictive Forecast</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">BigQuery ML runs ARIMA_PLUS to predict stock-outs up to 21 days in advance.</p>
+        </div>
+      </div>
+      <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 flex flex-col justify-between h-48">
+        <div class="space-y-2">
+          <span class="w-8 h-8 rounded-lg bg-purple-600/10 text-purple-400 flex items-center justify-center font-bold text-sm">3</span>
+          <h4 class="font-bold text-white text-base">AI Intervention Drafting</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">Gemini agents draft custom administrative orders (e.g. transfer orders).</p>
+        </div>
+      </div>
+      <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 flex flex-col justify-between h-48">
+        <div class="space-y-2">
+          <span class="w-8 h-8 rounded-lg bg-amber-600/10 text-amber-400 flex items-center justify-center font-bold text-sm">4</span>
+          <h4 class="font-bold text-white text-base">Human Sign-off</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">The District Health Officer reviews, edits, and authorizes with one tap.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 3 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Main Features & Capabilities -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">Operational Command Center</h2>
+      <span class="text-sm font-semibold tracking-wider text-blue-500 uppercase">Key Features</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-8 my-auto">
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <span class="text-blue-500 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">Live Telemetry Dashboard</h4>
+            <p class="text-slate-400 text-xs">Tracks real-time facility risk indices, patient footfall anomalies, and staff attendance.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-blue-500 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">Daily 07:00 IST Executive Briefing</h4>
+            <p class="text-slate-400 text-xs">Generates text & voice summaries (English/Hindi) to kickstart the day's tasks.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-blue-500 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">Natural Language Ask Bar</h4>
+            <p class="text-slate-400 text-xs">Ask questions like <i>"Which PHCs will run out of ORS before the 15th?"</i> with verifiable citations.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <span class="text-teal-400 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">Voice-First Vernacular PWA</h4>
+            <p class="text-slate-400 text-xs">Allows pharmacists and doctors to input data via simple Hindi/Rajasthani voice commands.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-teal-400 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">72-Hour Offline Resiliency</h4>
+            <p class="text-slate-400 text-xs">Local IndexedDB caching mirrors user scopes so the app functions in blind zones.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-teal-400 text-lg">✔</span>
+          <div>
+            <h4 class="font-bold text-slate-200 text-sm">Automated Recommendation Engine</h4>
+            <p class="text-slate-400 text-xs">Identifies nearby surplus stock and drafts secure digital transfer orders.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 4 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Architecture Diagram & Tech Stack -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">System Architecture</h2>
+      <span class="text-sm font-semibold tracking-wider text-purple-400 uppercase">Serverless & Secure</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6 my-auto text-sm">
+      <div class="bg-slate-900 p-5 rounded-xl border border-slate-800">
+        <h4 class="font-bold text-blue-400 mb-3 uppercase tracking-wider text-xs">1. Presentation & Sync</h4>
+        <ul class="space-y-2 text-slate-300 text-xs">
+          <li>• <b>Next.js 14 App Router</b></li>
+          <li>• Offline-first PWA Outbox</li>
+          <li>• Firebase Hosting CDN</li>
+          <li>• Material-UI v6 / Tailwind CSS</li>
+        </ul>
+      </div>
+
+      <div class="bg-slate-900 p-5 rounded-xl border border-slate-800">
+        <h4 class="font-bold text-teal-400 mb-3 uppercase tracking-wider text-xs">2. Ingestion & Storage</h4>
+        <ul class="space-y-2 text-slate-300 text-xs">
+          <li>• Cloud Run API microservices</li>
+          <li>• Firestore Multi-tenant DB</li>
+          <li>• GCP Pub/Sub messaging pipeline</li>
+          <li>• BigQuery analytics data lake</li>
+        </ul>
+      </div>
+
+      <div class="bg-slate-900 p-5 rounded-xl border border-slate-800">
+        <h4 class="font-bold text-purple-400 mb-3 uppercase tracking-wider text-xs">3. Cognitive & ML Layer</h4>
+        <ul class="space-y-2 text-slate-300 text-xs">
+          <li>• <b>Vertex AI Agent Engine</b></li>
+          <li>• Gemini 2.5 Flash / Pro model API</li>
+          <li>• BQML ARIMA_PLUS forecasting</li>
+          <li>• Google Speech & Translate APIs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 5 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Agent Ecosystem -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">The Agent Ecosystem</h2>
+      <span class="text-sm font-semibold tracking-wider text-teal-400 uppercase">11 Coordinated Agents</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-8 my-auto">
+      <div>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">
+          Rather than relying on a single monolith prompt, SwasthyaOps orchestrates <b>11 distinct agents</b> coordinated by a central <b>Planner Agent</b>. 
+        </p>
+        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-2">Deterministic Guardrails</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Agents operate only via strictly defined, typed tools. They can read inventory levels and calculate travel times, but cannot write databases or execute actions directly.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800"><span class="text-teal-400 font-bold">Forecast Agent</span>: Handles stock-out math</div>
+        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800"><span class="text-teal-400 font-bold">Disease Agent</span>: Predicts outbreaks</div>
+        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800"><span class="text-teal-400 font-bold">Doctor Agent</span>: Tracks absenteeism</div>
+        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800"><span class="text-teal-400 font-bold">Briefing Agent</span>: Creates the 07:00 IST report</div>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 6 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Safety, Compliance & Governance -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">Security, Compliance & Scale</h2>
+      <span class="text-sm font-semibold tracking-wider text-amber-500 uppercase">DPDP Act 2023 Aligned</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6 my-auto text-sm">
+      <div class="space-y-2">
+        <div class="text-amber-500 text-xl font-bold">🔒 DPDP by Design</div>
+        <p class="text-slate-400 text-xs leading-relaxed">
+          Zero Patient Personal Identifiable Information (PII) is processed. The system runs entirely on operational metadata (attendance, stock counts, bed counts).
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <div class="text-blue-500 text-xl font-bold">📜 Auditable Log</div>
+        <p class="text-slate-400 text-xs leading-relaxed">
+          Every single agent run, prompt template version, tool call, token length, and response is recorded in Firestore for full administrative auditability.
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <div class="text-teal-400 text-xl font-bold">⚡ Low Cost & Scale</div>
+        <p class="text-slate-400 text-xs leading-relaxed">
+          Serverless hosting costs are kept under ₹35,000 (~$400 USD) per district/month. Highly scalable to dozens of districts with zero architectural modifications.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 7 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Exit Criteria & Success Metrics -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <h2 class="text-2xl font-outfit font-bold text-white">12-Month Pilot Goals (Sikar)</h2>
+      <span class="text-sm font-semibold tracking-wider text-teal-400 uppercase">Exit Criteria</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6 my-auto">
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800/80 text-center">
+        <div class="text-5xl font-extrabold text-blue-500 font-outfit mb-2">≥ 80%</div>
+        <div class="text-slate-300 font-semibold text-sm mb-1">Predictive Accuracy</div>
+        <p class="text-slate-500 text-xs">Stock-outs predicted at least 14 days in advance</p>
+      </div>
+
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800/80 text-center">
+        <div class="text-5xl font-extrabold text-teal-400 font-outfit mb-2">&lt; 24h</div>
+        <div class="text-slate-300 font-semibold text-sm mb-1">Absentee Detection</div>
+        <p class="text-slate-500 text-xs">Unplanned doctor absence flagged within 24 hours</p>
+      </div>
+
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800/80 text-center">
+        <div class="text-5xl font-extrabold text-purple-500 font-outfit mb-2">&gt; 7 Days</div>
+        <div class="text-slate-300 font-semibold text-sm mb-1">Disease Warning</div>
+        <p class="text-slate-500 text-xs">Outbreaks detected ahead of weekly IDSP cycle</p>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 8 / 9</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: The Vision -->
+  <div class="slide bg-slate-950 p-12 rounded-2xl shadow-2xl border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-600/10 blur-3xl"></div>
+    
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+      <span class="font-outfit font-black text-xl tracking-tight text-white font-medium">The Vision</span>
+    </div>
+
+    <div class="my-auto max-w-3xl space-y-6">
+      <h3 class="text-4xl font-outfit font-extrabold text-white leading-tight">
+        Bringing Site Reliability Engineering (SRE) <br>to Public Healthcare
+      </h3>
+      <p class="text-lg text-slate-400 leading-relaxed font-light">
+        "We are bringing the same observability, predictability, and fast response loops that software operations rely on to save lives across 750 districts and 160,000 PHCs in India."
+      </p>
+    </div>
+
+    <div class="flex justify-between items-center border-t border-slate-800/80 pt-6 text-sm text-slate-500 font-medium">
+      <div>SwasthyaOps AI — Pitch Deck</div>
+      <div>Slide 9 / 9</div>
+    </div>
+  </div>
+
+</body>
+</html>

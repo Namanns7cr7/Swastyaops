@@ -34,26 +34,46 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+const MOCK_USER_KEY = 'swasthya_mock_user';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Attempt to listen to real Firebase auth state
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (u) => {
-        setUser(u);
+    // Check for persisted mock user first (dev bypass)
+    try {
+      const stored = sessionStorage.getItem(MOCK_USER_KEY);
+      if (stored) {
+        setUser(JSON.parse(stored) as any);
         setLoading(false);
-      },
-      (error) => {
-        console.error('Firebase auth state error:', error);
-        setLoading(false);
+        return;
       }
-    );
+    } catch {
+      // sessionStorage not available (SSR), ignore
+    }
+
+    let unsubscribe = () => {};
+
+    // Attempt to listen to real Firebase auth state safely
+    if (auth && typeof auth.onIdTokenChanged === 'function') {
+      unsubscribe = onAuthStateChanged(
+        auth,
+        (u) => {
+          setUser(u);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Firebase auth state error:', error);
+          setLoading(false);
+        }
+      );
+    } else {
+      console.warn('Firebase Auth is not fully initialized. Operating in mock-only mode.');
+      setLoading(false);
+    }
 
     // Fallback: If Firebase fails to connect (e.g. mock keys), unlock the UI after 1.5s
-    // so the "Continue with Google" button (which has a dev bypass) becomes clickable.
     const fallbackTimer = setTimeout(() => {
       setLoading((prev) => {
         if (prev) console.warn('Firebase auth timed out; unlocking UI for dev bypass.');
@@ -70,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = useCallback(async () => {
     // Development bypass: log in as mock District Health Officer directly
     console.warn("Dev mode: signing in with mock credentials");
-    setUser({
+    const mockUser = {
       uid: "u1",
       email: "dho-sikar@swasthyaops.gov.in",
       displayName: "District Health Officer (Sikar)",
@@ -82,12 +102,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           facility_ids: [],
         }
       }),
-    } as any);
+    };
+    // Persist mock user so AuthGate survives page navigation
+    try { sessionStorage.setItem(MOCK_USER_KEY, JSON.stringify(mockUser)); } catch { /* SSR */ }
+    setUser(mockUser as any);
     setLoading(false);
   }, []);
 
   const signOutUser = useCallback(async () => {
-    await signOut(auth);
+    try { sessionStorage.removeItem(MOCK_USER_KEY); } catch { /* SSR */ }
+    if (auth && typeof auth.signOut === 'function') {
+      await signOut(auth).catch(() => {});
+    }
     setUser(null);
   }, []);
 
