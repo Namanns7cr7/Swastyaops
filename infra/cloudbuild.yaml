@@ -42,14 +42,14 @@ steps:
         declare -A APPS=( [svc-api]="app.main:app" [svc-ingestion]="app.ingestion.main:app" \
           [svc-agents]="app.agents.main:app" [svc-forecast]="app.forecast.main:app" \
           [svc-notify]="app.notify.main:app" [svc-reports]="app.reports.main:app" )
-        for SVC in "${!APPS[@]}"; do
+        for SVC in "$${!APPS[@]}"; do
           EXTRA=""
           if [[ "${_ENV}" != "dev" ]]; then EXTRA="--no-traffic --tag=canary"; fi
-          gcloud run deploy "$SVC" \
+          gcloud run deploy "$$SVC" \
             --image="${_REGION}-docker.pkg.dev/$PROJECT_ID/services/backend:git-${SHORT_SHA}" \
             --region="${_REGION}" --command=python \
-            --args="-m,uvicorn,${APPS[$SVC]},--host,0.0.0.0,--port,8080" \
-            $EXTRA --quiet &
+            --args="-m,uvicorn,$${APPS[$$SVC]},--host,0.0.0.0,--port,8080" \
+            $$EXTRA --quiet &
         done
         wait
     waitFor: [push]
