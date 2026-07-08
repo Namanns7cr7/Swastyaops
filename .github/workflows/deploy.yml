@@ -32,6 +32,7 @@ jobs:
       - name: Deploy hosting + rules
         run: |
           cd frontend && npm ci && npm run build
+          cd ..
           npx firebase-tools deploy --project swasthyaops-dev --only hosting,firestore:rules --non-interactive
 
   deploy-staging:

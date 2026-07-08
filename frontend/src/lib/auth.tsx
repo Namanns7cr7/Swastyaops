@@ -39,12 +39,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
+    // Attempt to listen to real Firebase auth state
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (u) => {
+        setUser(u);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Firebase auth state error:', error);
+        setLoading(false);
+      }
+    );
+
+    // Fallback: If Firebase fails to connect (e.g. mock keys), unlock the UI after 1.5s
+    // so the "Continue with Google" button (which has a dev bypass) becomes clickable.
+    const fallbackTimer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) console.warn('Firebase auth timed out; unlocking UI for dev bypass.');
+        return false;
+      });
+    }, 1500);
 
     return () => {
+      clearTimeout(fallbackTimer);
       unsubscribe();
     };
   }, []);
